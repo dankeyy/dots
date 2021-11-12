@@ -59,6 +59,7 @@
 ;; theme setting
 (setq doom-theme 'doom-city-lights)
 
+
 ;; PATH setting
 (defun set-exec-path-from-shell-PATH ()
   "Set up Emacs' `exec-path' and PATH environment variable to match
@@ -84,85 +85,42 @@ apps are not started from a shell."
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
-;;(global-unset-key (kbd "M-<down-mouse-1>"))
-;;(global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
+(global-unset-key (kbd "M-<down-mouse-1>"))
+(global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
 
+(map! :nv "M-e" #'eshell)
 
 ;; transparency
-(set-frame-parameter (selected-frame) 'alpha '(92 . 90))
-(add-to-list 'default-frame-alist '(alpha . (92 . 90)))
-
-
-;; smooth scrolling with sublimity
-(require 'sublimity)
-(require 'sublimity-scroll)
-;; (require 'sublimity-map)
-(sublimity-mode 1)
-(setq sublimity-scroll-weight 3
-      sublimity-scroll-drift-length 5)
+(set-frame-parameter (selected-frame) 'alpha '(90 . 80))
+(add-to-list 'default-frame-alist '(alpha . (90 . 80)))
 
 
 ;; highlight similar occurences
-(require 'highlight-symbol)
 (add-hook 'prog-mode-hook 'highlight-symbol-mode)
 
 
-;; treemacs configuration
-(treemacs-project-follow-mode)
+;; treemacs
+(setq treemacs-project-follow-mode 1)
+(setq doom-themes-treemacs-theme "doom-colors")
 
 
-;;yasnippets
+;; yasnippets
+(yas-global-mode 1)
 ;; (yas-reload-all)
-(add-hook 'prog-mode-hook #'yas-minor-mode)
+;; (add-hook 'prog-mode-hook #'yas-minor-mode)
 
 
-;; absolute mess of lsp & flychecking, will organize one day
-(with-eval-after-load 'lsp-mode
-  (add-to-list 'lsp-file-watch-ignored-directories "/home/dankey"))
+;; company
+(add-hook 'after-init-hook #'global-company-mode)
 
-(require 'lsp-java)
-(add-hook 'java-mode-hook #'lsp)
 
-(use-package flycheck
- :hook (prog-mode . flycheck-mode))
+;; esh-autosuggest
+(add-hook 'eshell-mode-hook #'esh-autosuggest-mode)
 
-;;(use-package company
-;;  :hook (prog-mode . company-mode)
-;;  :config (setq company-tooltip-align-annotations t)
-;;          (setq company-minimum-prefix-length 1))
 
-;;(use-package lsp-ui)
+;; general lsp config
+(debug-on-entry 'lsp--ask-about-watching-big-repo)
 
-;;(use-package toml-mode)
 
-;; (use-package rust-mode
-;;  :hook (rust-mode . lsp))
-
-;; Add keybindings for interacting with Cargo
- (use-package cargo
-  :hook (rust-mode . cargo-minor-mode))
-
-(use-package flycheck-rust
- :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
-
-;(setq lsp-file-watch-threshold 1000)
-;;(require 'flycheck)
- (require 'flycheck-rust)
-;;(require 'flycheck-mypy)
-;;(require 'flymake)
-
-;;(add-hook 'python-mode-hook 'flycheck-mode)
-;;(add-hook 'after-init-hook #'global-flycheck-mode)
-;;(add-hook 'python-mode-hook
-;;         (lambda ()
-;;            (setq flycheck-python-pylint-executable "~/venv/bin/pylint")
-;;            (setq flycheck-pylintrc "~/.pylintrc")))
-
-;;(flycheck-add-next-checker 'python-flake8 'python-pylint)
-
-(setq lsp-rust-server 'rust-analyzer)
-(use-package rustic
-  :hook (rust-mode . lsp))
-;; (use-package rust-mode
-;;  :hook (rust-mode . lsp))
-
+;; icons
+;; (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)

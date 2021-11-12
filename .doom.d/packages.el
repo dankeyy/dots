@@ -9,14 +9,13 @@
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
 ;(package! some-package)
 
-(package! eglot)
 (package! multiple-cursors)
-(package! lsp-java)
-(package! sublimity)
+;; (package! yasnippet)
+;; (package! yasnippet-snippets)
 (package! highlight-symbol)
-(package! rustic)
-(package! yasnippet)
-(package! yasnippet-snippets)
+(package! esh-autosuggest)
+;; (package! all-the-icons-dired)
+(package! visual-fill-column :recipe (:host github :repo "joostkremers/visual-fill-column"))
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:
 ;; https://github.com/raxod502/straight.el#the-recipe-format
