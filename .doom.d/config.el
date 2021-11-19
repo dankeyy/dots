@@ -57,7 +57,7 @@
 ;; end of doom configs, my shit below: 
 
 ;; theme setting
-(setq doom-theme 'doom-city-lights)
+(setq doom-theme 'doom-xcode)
 
 
 ;; PATH setting
@@ -88,6 +88,7 @@ apps are not started from a shell."
 (global-unset-key (kbd "M-<down-mouse-1>"))
 (global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
 
+;; eshell shortcut
 (map! :nv "M-e" #'eshell)
 
 ;; transparency
@@ -101,26 +102,35 @@ apps are not started from a shell."
 
 ;; treemacs
 (setq treemacs-project-follow-mode 1)
-(setq doom-themes-treemacs-theme "doom-colors")
-
+;; (setq doom-themes-treemacs-theme "doom-colors")
 
 ;; yasnippets
-(yas-global-mode 1)
+;; (yas-global-mode 1)
 ;; (yas-reload-all)
 ;; (add-hook 'prog-mode-hook #'yas-minor-mode)
 
 
-;; company
-(add-hook 'after-init-hook #'global-company-mode)
-
-
-;; esh-autosuggest
-(add-hook 'eshell-mode-hook #'esh-autosuggest-mode)
-
-
 ;; general lsp config
-(debug-on-entry 'lsp--ask-about-watching-big-repo)
+;; (debug-on-entry 'lsp--ask-about-watching-big-repo)
+
+;; compilation hooks
+
+(add-hook 'c++-mode-hook
+        (setq-local compile-command
+              (format "g++ -std=c++17 -Wall %s -o a.out && ./a.out" (shell-quote-argument (buffer-name)))))
+
+(add-hook 'python-mode-hook
+          (lambda ()
+            (set (make-local-variable 'compile-command)
+                 (format "python %s" (shell-quote-argument (buffer-name))))))
 
 
-;; icons
-;; (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+(add-hook 'rust-mode-hook
+          (lambda ()
+            (set (make-local-variable 'compile-command)
+                 "cargo run")))
+
+(add-hook 'haskell-mode-hook
+          (lambda ()
+            (set (make-local-variable 'compile-command)
+                 "stack run")))
