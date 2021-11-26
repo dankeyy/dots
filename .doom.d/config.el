@@ -104,16 +104,29 @@ apps are not started from a shell."
 (setq treemacs-project-follow-mode 1)
 ;; (setq doom-themes-treemacs-theme "doom-colors")
 
-;; yasnippets
-;; (yas-global-mode 1)
-;; (yas-reload-all)
-;; (add-hook 'prog-mode-hook #'yas-minor-mode)
-
 
 ;; general lsp config
 ;; (debug-on-entry 'lsp--ask-about-watching-big-repo)
 
+
+;; dap config, see: https://emacs-lsp.github.io/dap-mode/page/configuration/
+(require 'dap-cpptools)
+
+(require 'dap-python)
+
+(dap-register-debug-template "Rust::GDB Run Configuration"
+                             (list :type "gdb"
+                                   :request "launch"
+                                   :name "GDB::Run"
+                           :gdbpath "rust-gdb"
+                                   :target nil
+                                   :cwd nil))
+
 ;; compilation hooks
+(add-hook 'rustic-mode-hook
+          (lambda ()
+            (set (make-local-variable 'compile-command)
+                 "cargo run")))
 
 (add-hook 'c++-mode-hook
         (setq-local compile-command
@@ -125,12 +138,14 @@ apps are not started from a shell."
                  (format "python %s" (shell-quote-argument (buffer-name))))))
 
 
-(add-hook 'rust-mode-hook
-          (lambda ()
-            (set (make-local-variable 'compile-command)
-                 "cargo run")))
-
 (add-hook 'haskell-mode-hook
           (lambda ()
             (set (make-local-variable 'compile-command)
                  "stack run")))
+
+(add-hook 'java-mode-hook
+          (lambda ()
+            (set (make-local-variable 'compile-command)
+                 (format "javac %s && java %s"
+                         (shell-quote-argument (buffer-name))
+                         (file-name-sans-extension (buffer-name))))))
