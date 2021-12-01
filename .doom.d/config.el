@@ -57,7 +57,7 @@
 ;; end of doom configs, my shit below: 
 
 ;; theme setting
-(setq doom-theme 'doom-xcode)
+(setq doom-theme 'doom-acario-dark)
 
 
 ;; PATH setting
@@ -128,9 +128,17 @@ apps are not started from a shell."
             (set (make-local-variable 'compile-command)
                  "cargo run")))
 
-(add-hook 'c++-mode-hook
+(add-hook 'c-mode-hook
+        (lambda ()
         (setq-local compile-command
-              (format "g++ -std=c++17 -Wall %s -o a.out && ./a.out" (shell-quote-argument (buffer-name)))))
+                    (format "gcc -Wall %s -o %s && ./%s"
+                            (shell-quote-argument (buffer-name))
+                            (file-name-sans-extension (buffer-name))
+                            (file-name-sans-extension (buffer-name))))))
+
+;; (add-hook 'c++-mode-hook
+;;         (setq-local compile-command
+;;               (format "g++ -std=c++17 -Wall %s -o a.out && ./a.out" (shell-quote-argument (buffer-name)))))
 
 (add-hook 'python-mode-hook
           (lambda ()
