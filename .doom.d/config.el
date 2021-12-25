@@ -57,7 +57,7 @@
 ;; end of doom configs, my shit below: 
 
 ;; theme setting
-(setq doom-theme 'doom-rouge)
+(setq doom-theme 'doom-gruvbox)
 
 
 ;; PATH setting
@@ -79,7 +79,6 @@
 
 
 ;; multiple-cursors
-;(require 'multiple-cursors)
 (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
@@ -88,8 +87,10 @@
 (global-unset-key (kbd "M-<down-mouse-1>"))
 (global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
 
+
 ;; eshell shortcut
 (map! :nv "M-e" #'eshell)
+
 
 ;; transparency
 (set-frame-parameter (selected-frame) 'alpha '(90 . 80))
@@ -97,63 +98,65 @@
 
 
 ;; highlight similar occurences
-(add-hook 'prog-mode-hook 'highlight-symbol-mode)
+(add-hook 'prog-mode-hook
+        (lambda()
+                (highlight-symbol-mode)
+                (use-package dap-cpptools)
+
+                ;; dap config, see: https://emacs-lsp.github.io/dap-mode/page/configuration/
+                (setq dap-auto-configure-features '(sessions locals controls tooltip))
+                (dap-mode 1)
+                (dap-ui-mode 1)
+                (dap-tooltip-mode 1)
+                (tooltip-mode 1)
+                (dap-ui-controls-mode 1)))
 
 
 ;; treemacs
 (setq treemacs-project-follow-mode 1)
-;; (setq doom-themes-treemacs-theme "doom-colors")
 
 
-;; general lsp config
-;; (debug-on-entry 'lsp--ask-about-watching-big-repo)
-
-
-;; dap config, see: https://emacs-lsp.github.io/dap-mode/page/configuration/
-(require 'dap-cpptools)
-
-(require 'dap-python)
-
-(dap-register-debug-template "Rust::GDB Run Configuration"
-                             (list :type "gdb"
-                                   :request "launch"
-                                   :name "GDB::Run"
-                           :gdbpath "rust-gdb"
-                                   :target nil
-                                   :cwd nil))
-
-;; compilation hooks
-(add-hook 'rustic-mode-hook
-          (lambda ()
-            (set (make-local-variable 'compile-command)
-                 "cargo run")))
-
-(add-hook 'c-mode-hook
-        (lambda ()
+;; hooks for different langs
+(defun ccpp-buffer-config()
         (setq-local compile-command
-                    (format "gcc -Wall %s -o %s && ./%s"
-                            (shell-quote-argument (buffer-name))
-                            (file-name-sans-extension (buffer-name))
-                            (file-name-sans-extension (buffer-name))))))
+                (format "gcc -Wall %s -o %s && ./%s"
+                        (shell-quote-argument (buffer-name))
+                        (file-name-sans-extension (buffer-name))
+                        (file-name-sans-extension (buffer-name)))))
 
-;; (add-hook 'c++-mode-hook
-;;         (setq-local compile-command
-;;               (format "g++ -std=c++17 -Wall %s -o a.out && ./a.out" (shell-quote-argument (buffer-name)))))
+(add-hook 'c-mode-hook #'ccpp-buffer-config)
+(add-hook 'c++-mode-hook #'ccpp-buffer-config)
 
-(add-hook 'python-mode-hook
-          (lambda ()
-            (set (make-local-variable 'compile-command)
-                 (format "python %s" (shell-quote-argument (buffer-name))))))
+
+(defun python-buffer-config ()
+        (setq-local compile-command
+                (format "python %s" (shell-quote-argument (buffer-name))))
+        (use-package dap-python :defer 2))
+
+(add-hook 'python-mode-hook #'python-buffer-config)
+
+
+(defun rust-buffer-config ()
+        (setq-local compile-command "cargo run")
+
+        (dap-register-debug-template "Rust::GDB Run Configuration"
+                (list :type "gdb"
+                        :request "launch"
+                        :name "GDB::Run"
+                        :gdbpath "rust-gdb"
+                        :target nil
+                        :cwd nil)))
+
+(add-hook 'rustic-mode-hook #'rust-buffer-config)
 
 
 (add-hook 'haskell-mode-hook
-          (lambda ()
-            (set (make-local-variable 'compile-command)
-                 "stack run")))
+          (lambda () (setq-local compile-command "stack run")))
+
 
 (add-hook 'java-mode-hook
           (lambda ()
-            (set (make-local-variable 'compile-command)
+            (setq-local compile-command
                  (format "javac %s && java %s"
                          (shell-quote-argument (buffer-name))
                          (file-name-sans-extension (buffer-name))))))
