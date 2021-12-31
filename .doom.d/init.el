@@ -14,6 +14,7 @@
 ;;      Alternatively, press 'gd' (or 'C-c c d') on a module to browse its
 ;;      directory (for easy access to its source code).
 
+(setq native-comp-deferred-compilation t)
 (add-hook 'after-init-hook #'global-flycheck-mode)
 
 (doom! :input
