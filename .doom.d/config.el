@@ -6,9 +6,10 @@
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
-(setq user-full-name "John Doe"
-      user-mail-address "john@doe.com")
+;; (setq user-full-name "John Doe"
+;;       user-mail-address "john@doe.com")
 
+(let ((file-name-handler-alist nil))
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
 ;;
@@ -19,7 +20,7 @@
 ;;
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
- (setq doom-font (font-spec :family "monospace" :size 15 :weight 'semi-bold)
+ (setq doom-font (font-spec :family "Hack" :size 15 :weight 'semi-bold)
        doom-variable-pitch-font (font-spec :family "sans" :size 14))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
@@ -57,7 +58,7 @@
 ;; end of doom configs, my shit below: 
 
 ;; theme setting
-(setq doom-theme 'doom-gruvbox)
+(setq doom-theme 'doom-dracula)
 
 
 ;; PATH setting
@@ -91,38 +92,49 @@
 ;; eshell shortcut
 (map! :nv "M-e" #'eshell)
 
+;; find -name shortcut
+(map! :nv "M-s f" #'find-name-dired)
+
+;; parens
+(map! :nv "C-9" #'sp-wrap-round)
+(map! :nv "C-0" #'sp-unwrap-sexp)
+
+(map! :nv "SPC d" #'lsp-describe-thing-at-point)
+(map! :nv "SPC k" #'kill-compilation)
 
 ;; transparency
-(set-frame-parameter (selected-frame) 'alpha '(90 . 80))
-(add-to-list 'default-frame-alist '(alpha . (90 . 80)))
+(set-frame-parameter (selected-frame) 'alpha '(99 . 80))
+(add-to-list 'default-frame-alist '(alpha . (95 . 80)))
 
 
 ;; highlight similar occurences
-(add-hook 'prog-mode-hook
-        (lambda()
-                (highlight-symbol-mode)
-                (use-package dap-cpptools)
+;; (highlight-symbol-mode t)
+;; (use-package dap-cpptools)
 
-                ;; dap config, see: https://emacs-lsp.github.io/dap-mode/page/configuration/
+;; dap config, see: https://emacs-lsp.github.io/dap-mode/page/configuration/
+(add-hook 'dap-mode-hook
+          (lambda()
                 (setq dap-auto-configure-features '(sessions locals controls tooltip))
-                (dap-mode 1)
                 (dap-ui-mode 1)
                 (dap-tooltip-mode 1)
                 (tooltip-mode 1)
                 (dap-ui-controls-mode 1)))
 
 
-;; treemacs
-(setq treemacs-project-follow-mode 1)
+;; lsp shit
+;; (setq read-process-output-max (* 1024 1024))
+;; (setq lsp-enable-file-watchers t)
+;; (setq lsp-file-watch-threshold 30000)
 
 
 ;; hooks for different langs
 (defun ccpp-buffer-config()
-        (setq-local compile-command
-                (format "gcc -Wall %s -o %s && ./%s"
-                        (shell-quote-argument (buffer-name))
-                        (file-name-sans-extension (buffer-name))
-                        (file-name-sans-extension (buffer-name)))))
+  (load! "misc/disaster")
+  (setq-local compile-command
+        (format "gcc -Wall %s -o %s && ./%s"
+                (shell-quote-argument (buffer-name))
+                (file-name-sans-extension (buffer-name))
+                (file-name-sans-extension (buffer-name)))))
 
 (add-hook 'c-mode-hook #'ccpp-buffer-config)
 (add-hook 'c++-mode-hook #'ccpp-buffer-config)
@@ -130,22 +142,23 @@
 
 (defun python-buffer-config ()
         (setq-local compile-command
-                (format "python %s" (shell-quote-argument (buffer-name))))
-        (use-package dap-python :defer 2))
+                (format "python %s" (shell-quote-argument (buffer-name)))))
+        ;; (use-package dap-python :defer 2))
 
 (add-hook 'python-mode-hook #'python-buffer-config)
 
+;; (setq fancy-splash-image (concat doom-private-dir "misc/donkey2.jpg"))
 
 (defun rust-buffer-config ()
-        (setq-local compile-command "cargo run")
+        (setq-local compile-command "cargo run"))
 
-        (dap-register-debug-template "Rust::GDB Run Configuration"
-                (list :type "gdb"
-                        :request "launch"
-                        :name "GDB::Run"
-                        :gdbpath "rust-gdb"
-                        :target nil
-                        :cwd nil)))
+;; (dap-register-debug-template "Rust::GDB Run Configuration"
+;;         (list :type "gdb"
+;;                 :request "launch"
+;;                 :name "GDB::Run"
+;;                 :gdbpath "rust-gdb"
+;;                 :target nil
+;;                 :cwd nil))
 
 (add-hook 'rustic-mode-hook #'rust-buffer-config)
 
@@ -160,3 +173,11 @@
                  (format "javac %s && java %s"
                          (shell-quote-argument (buffer-name))
                          (file-name-sans-extension (buffer-name))))))
+
+
+;; vterm fix
+;; (use-package vterm
+;;   :load-path  "~/.emacs.d/straight/repos/emacs-libvterm")
+
+
+)

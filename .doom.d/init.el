@@ -14,7 +14,12 @@
 ;;      Alternatively, press 'gd' (or 'C-c c d') on a module to browse its
 ;;      directory (for easy access to its source code).
 
-(setq native-comp-deferred-compilation t)
+;; (after! persp-mode
+;;   (setq persp-emacsclient-init-frame-behaviour-override "main"))
+;; (setq gc-cons-threshold 50000000)
+;; (setq gc-cons-threshold 100000000)
+;; (setq gc-cons-threshold (* 100 1024 1024))
+;; (setq native-comp-deferred-compilation t)
 (add-hook 'after-init-hook #'global-flycheck-mode)
 
 (doom! :input
@@ -79,7 +84,7 @@
        ;;eshell            ; the elisp shell that works everywhere
        ;;shell             ; simple shell REPL for Emacs
        ;;term              ; basic terminal emulator for Emacs
-       vterm             ; the best terminal emulation in Emacs
+       ;;vterm             ; the best terminal emulation in Emacs
 
        :checkers
        syntax              ; tasing you for every semicolon you forget
@@ -137,7 +142,7 @@
        ;;(go +lsp)         ; the hipster dialect
        (haskell +lsp)    ; a language that's lazier than I am
        ;;hy                ; readability of scheme w/ speed of python
-       ;;idris             ; a language you can depend on
+       (idris +lsp)             ; a language you can depend on
        ;;json              ; At least it ain't XML
        (java +lsp);+meghanada) ; the poster child for carpal tunnel syndrome
        ;;javascript        ; all(hope(abandon(ye(who(enter(here))))))
@@ -155,10 +160,10 @@
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
-       (python +pyright)            ; beautiful is better than ugly
+       (python +lsp +pyright)            ; beautiful is better than ugly
        ;;qt                ; the 'cutest' gui framework ever
        ;;racket            ; a DSL for DSLs
-       ;;raku              ; the artist formerly known as perl6
+       raku              ; the artist formerly known as perl6
        ;;rest              ; Emacs as a REST client
        ;;rst               ; ReST in peace
        ;;(ruby +rails)     ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
@@ -190,4 +195,3 @@
        :config
        ;;literate
        (default +bindings +smartparens))
-
