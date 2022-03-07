@@ -79,15 +79,6 @@
 ;; (set-exec-path-from-shell-PATH)
 
 
-;; multiple-cursors
-(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-(global-set-key (kbd "C->") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-(global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
-(global-unset-key (kbd "M-<down-mouse-1>"))
-(global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
-
 
 ;; eshell shortcut
 (map! :nv "M-e" #'eshell)
@@ -107,24 +98,8 @@
 (add-to-list 'default-frame-alist '(alpha . (95 . 80)))
 
 
-;; highlight similar occurences
-;; (highlight-symbol-mode t)
-;; (use-package dap-cpptools)
-
 ;; dap config, see: https://emacs-lsp.github.io/dap-mode/page/configuration/
-(add-hook 'dap-mode-hook
-          (lambda()
-                (setq dap-auto-configure-features '(sessions locals controls tooltip))
-                (dap-ui-mode 1)
-                (dap-tooltip-mode 1)
-                (tooltip-mode 1)
-                (dap-ui-controls-mode 1)))
-
-
-;; lsp shit
-;; (setq read-process-output-max (* 1024 1024))
-;; (setq lsp-enable-file-watchers t)
-;; (setq lsp-file-watch-threshold 30000)
+(setq dap-auto-configure-features '(sessions locals controls tooltip))
 
 
 ;; hooks for different langs
@@ -143,22 +118,30 @@
 (defun python-buffer-config ()
         (setq-local compile-command
                 (format "python %s" (shell-quote-argument (buffer-name)))))
-        ;; (use-package dap-python :defer 2))
 
 (add-hook 'python-mode-hook #'python-buffer-config)
 
-;; (setq fancy-splash-image (concat doom-private-dir "misc/donkey2.jpg"))
 
 (defun rust-buffer-config ()
-        (setq-local compile-command "cargo run"))
+        (setq-local compile-command "cargo run")
+        (require 'dap-cpptools)
+        (require 'dap-gdb-lldb)
 
-;; (dap-register-debug-template "Rust::GDB Run Configuration"
-;;         (list :type "gdb"
-;;                 :request "launch"
-;;                 :name "GDB::Run"
-;;                 :gdbpath "rust-gdb"
-;;                 :target nil
-;;                 :cwd nil))
+        (setq cargo-root (projectile-project-root))
+        (setq rust-exe (file-name-sans-extension (buffer-name)))
+
+        (dap-register-debug-template "Ma Rust Debug Template"
+                (list :type "cppdbg"
+                :request "launch"
+                :name "Rust::Run"
+                :MIMode "gdb"
+                :miDebuggerPath "rust-gdb"
+                :environment []
+                :program "${workspaceFolder}/target/debug/${workspaceFolder}"
+                :cwd "${workspaceFolder}"
+                :console "external"
+                :dap-compilation "cargo build"
+                :dap-compilation-dir "${workspaceFolder}")))
 
 (add-hook 'rustic-mode-hook #'rust-buffer-config)
 
@@ -173,11 +156,5 @@
                  (format "javac %s && java %s"
                          (shell-quote-argument (buffer-name))
                          (file-name-sans-extension (buffer-name))))))
-
-
-;; vterm fix
-;; (use-package vterm
-;;   :load-path  "~/.emacs.d/straight/repos/emacs-libvterm")
-
 
 )
