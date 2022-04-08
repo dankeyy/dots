@@ -9,7 +9,6 @@
 ;; (setq user-full-name "John Doe"
 ;;       user-mail-address "john@doe.com")
 
-(let ((file-name-handler-alist nil))
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
 ;;
@@ -56,66 +55,20 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-
-;; end of doom configs, my shit below: 
-
-;; theme setting
 (setq doom-theme 'doom-city-lights)
 
-
-;; PATH setting
-;; (defun set-exec-path-from-shell-PATH ()
-;;   "Set up Emacs' `exec-path' and PATH environment variable to match
-;; that used by the user's shell.
-
-;; This is particularly useful under Mac OS X and macOS, where GUI
-;; apps are not started from a shell."
-;;   (interactive)
-;;   (let ((path-from-shell (replace-regexp-in-string
-;; 			  "[ \t\n]*$" "" (shell-command-to-string
-;; 					  "$SHELL --login -c 'echo $PATH'"
-;; 						    ))))
-;;     (setenv "PATH" path-from-shell)
-;;     (setq exec-path (split-string path-from-shell path-separator))))
-
-;; (set-exec-path-from-shell-PATH)
-
-
-
-;; eshell shortcut
+;; ma keys
 (map! :nv "M-e" #'eshell)
-
-;; find -name shortcut
 (map! :nv "M-s f" #'find-name-dired)
-
-;; parens
 (map! :nv "C-9" #'sp-wrap-round)
 (map! :nv "C-0" #'sp-unwrap-sexp)
-
 (map! :nv "SPC d" #'lsp-describe-thing-at-point)
 (map! :nv "SPC k" #'kill-compilation)
-
-(defun insert-lambda ()
-  (interactive)
-  (insert "λ"))
-(map! :nv "SPC l" #'insert-lambda)
+(map! :nv "SPC l" #'(lambda () (interactive) (insert "λ")))
 
 ;; transparency
 (set-frame-parameter (selected-frame) 'alpha '(99 . 85))
 (add-to-list 'default-frame-alist '(alpha . (99 . 90)))
-
-;; (defun toggle-transparency ()
-;; (interactive)
-;; (let ((alpha (frame-parameter nil 'alpha)))
-;; (set-frame-parameter
-;;         nil 'alpha
-;;         (if (eql (cond ((numberp alpha) alpha)
-;;                 ((numberp (cdr alpha)) (cdr alpha))
-;;                 ;; also handle undocumented (<active> <inactive>) form.
-;;                 ((numberp (cadr alpha)) (cadr alpha)))
-;;                 100)
-;;         '(85 . 50) '(100 . 100)))))
-;; (global-set-key (kbd "C-c T") 'toggle-transparency)
 
 ;; dap config, see: https://emacs-lsp.github.io/dap-mode/page/configuration/
 (setq dap-auto-configure-features '(sessions locals controls tooltip))
@@ -176,4 +129,3 @@
                          (shell-quote-argument (buffer-name))
                          (file-name-sans-extension (buffer-name))))))
 
-)
