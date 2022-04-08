@@ -1,5 +1,5 @@
 
-sudo pacman -S emacs tmux fish
+sudo pacman -S emacs tmux fish xorg-xinit
 # use doom, rustup, ghcup install scripts
 # copy config files and dirs [.doom.d/, .tmux/, .tmux.conf, .config/fish/ .config/sxhkd]
 # comment any sxhkd keybindings starting with alt bc that'll mess up emacs' M commands.
@@ -8,6 +8,12 @@ sudo pacman -S emacs tmux fish
 # follow libinput-gestures github
 # on firefox, in about:config, set accessibility.typeaheadfind.enablesound to false
 
-echo "setxkbmap -option grp:alt_space_toggle us,il &" >> ~/.config/bspwm/bspwmrc
+# add to bspwmrc probably, maybe xinitrc so it'll run at autostart
+#xset b off
+#setxkbmap -option grp:alt_space_toggle us,il -option caps:escape &
+#usr/lib/geoclue-2.0/demos/agent &
+#redshift-gtk &
+#libinput-gestures-setup start
 
-dconf write /org/gnome/desktop/sound/event-sounds "false"
+
+sudo echo "blacklist pcspkr" > /etc/modprobe.d/pcspkr-blacklist.conf
