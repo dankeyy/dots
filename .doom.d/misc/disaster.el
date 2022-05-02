@@ -82,7 +82,7 @@
   :group 'disaster
   :type 'string)
 
-(defcustom disaster-objdump "objdump -d -M att -Sl --no-show-raw-insn"
+(defcustom disaster-objdump "objdump -d -M intel -Sl --no-show-raw-insn"
   "The command name and flags for running objdump."
   :group 'disaster
   :type 'string)

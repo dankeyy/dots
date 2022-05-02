@@ -13,7 +13,10 @@ sudo pacman -S emacs tmux fish xorg-xinit
 #setxkbmap -option grp:alt_space_toggle us,il -option caps:escape &
 #usr/lib/geoclue-2.0/demos/agent &
 #redshift-gtk &
-#libinput-gestures-setup start
+
+
+# if you're experiencing tearing on the side of the screen,
+# try disabling vsync in picom.conf or just not setting shadow=True there
 
 
 sudo echo "blacklist pcspkr" > /etc/modprobe.d/pcspkr-blacklist.conf

@@ -1,0 +1,4 @@
+java workspace emacs shit:
+  -remove the project root with lsp-workspace-remove
+  -cd to .emacs.d/.local/etc/java-workspace/ and remove whatever leftover project folder cache is laying there
+  then go back to emacs and open the project again. it'll ask if you want to import the project root. say i and it should work.

@@ -14,13 +14,9 @@
 ;;      Alternatively, press 'gd' (or 'C-c c d') on a module to browse its
 ;;      directory (for easy access to its source code).
 
-;; (after! persp-mode
-;;   (setq persp-emacsclient-init-frame-behaviour-override "main"))
-;; (setq gc-cons-threshold 50000000)
-;; (setq gc-cons-threshold 100000000)
-;; (setq gc-cons-threshold (* 100 1024 1024))
-;; (setq native-comp-deferred-compilation t)
-(add-hook 'after-init-hook #'global-flycheck-mode)
+
+(add-hook 'after-init-hook #'(lambda () (global-prettify-symbols-mode +1) (global-flycheck-mode +1)))
+
 
 (doom! :input
        ;;chinese
@@ -84,7 +80,7 @@
        ;;eshell            ; the elisp shell that works everywhere
        ;;shell             ; simple shell REPL for Emacs
        ;;term              ; basic terminal emulator for Emacs
-       ;;vterm             ; the best terminal emulation in Emacs
+       vterm             ; the best terminal emulation in Emacs
 
        :checkers
        syntax              ; tasing you for every semicolon you forget
@@ -140,12 +136,12 @@
        ;;fstar             ; (dependent) types and (monadic) effects and Z3
        ;;gdscript          ; the language you waited for
        ;;(go +lsp)         ; the hipster dialect
-       (haskell + lsp)    ; a language that's lazier than I am
+       (haskell +lsp)    ; a language that's lazier than I am
        ;;hy                ; readability of scheme w/ speed of python
        (idris +lsp)             ; a language you can depend on
        ;;json              ; At least it ain't XML
        (java +lsp);+meghanada) ; the poster child for carpal tunnel syndrome
-       ;;javascript        ; all(hope(abandon(ye(who(enter(here))))))
+       javascript        ; all(hope(abandon(ye(who(enter(here))))))
        ;;julia             ; a better, faster MATLAB
        ;;kotlin            ; a better, slicker Java(Script)
        ;;latex             ; writing papers in Emacs has never been so fun
