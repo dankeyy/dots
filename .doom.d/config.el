@@ -7,28 +7,28 @@
 (setq! doom-unicode-font (font-spec :family "Victor Mono" :size 11))
 
 ;; theme
-(setq doom-theme 'doom-city-lights)
+(setq doom-theme 'default)
 
 ;; just in case..
 (setq ring-bell-function 'ignore)
-(setq x-alt-keysym 'meta)
+;; (setq x-alt-keysym 'meta)
 
 ;; line numbers
 (setq display-line-numbers-type 'relative)
 
 
 ;; ma keys
-(map! :nv
-    "M-e" #'eshell
-    "M-s f" #'find-name-dired
-    "C-9" #'sp-wrap-round
-    "C-0" #'sp-unwrap-sexp
-    "SPC d" #'lsp-describe-thing-at-point
-    "SPC k" #'kill-compilation
-    "SPC r" #'vr/replace
-    "SPC c m" #'kmacro-call-macro
-    "SPC p ;" #'parrot-start-animation
-    "SPC l" #'(lambda () (interactive) (insert "λ")))
+;; (global-set-key "R" 'recompile)
+(map! :nv "M-e" #'eshell)
+(map! :nv "M-s f" #'find-name-dired)
+(map! :nv "C-9" #'sp-wrap-round)
+(map! :nv "C-0" #'sp-unwrap-sexp)
+(map! :nv "SPC d" #'lsp-describe-thing-at-point)
+(map! :nv "SPC k" #'kill-compilation)
+(map! :nv "SPC r" #'vr/replace)
+(map! :nv "SPC c m" #'kmacro-call-macro)
+(map! :nv "SPC p ;" #'parrot-start-animation)
+(map! :nv "SPC l" #'(lambda () (interactive) (insert "λ")))
 
 
 ;; transparency
