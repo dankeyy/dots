@@ -1,18 +1,20 @@
-;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
-;; To install a package with Doom you must declare them here and run 'doom sync'
-;; on the command line, then restart Emacs for the changes to take effect -- or
-;; use 'M-x doom/reload'.
 
-
-;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
-;(package! some-package)
 (package! diff-hl)
+(package! elpy)
+(package! parrot)
 (package! string-inflection)
+(package! flymake-shellcheck)
+(package! ansi-color)
+(package! company-quickhelp)
 (package! visual-regexp)
 (package! visual-regexp-steroids)
-
+(package! exec-path-from-shell)
+;; (package! beacon)
+;; (package! bidi)
+;; (package! telega)
+(package! company-tabnine)
 
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:

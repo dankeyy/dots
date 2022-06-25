@@ -14,7 +14,6 @@
 ;;      Alternatively, press 'gd' (or 'C-c c d') on a module to browse its
 ;;      directory (for easy access to its source code).
 
-
 (add-hook 'after-init-hook #'(lambda () (global-prettify-symbols-mode +1) (global-flycheck-mode +1)))
 
 
@@ -57,7 +56,7 @@
 
        :editor
        (evil +everywhere); come to the dark side, we have cookies
-       file-templates    ; auto-snippets for empty files
+       ;;(meow +qwerty)      ; file-templates    ; auto-snippets for empty files
        fold              ; (nigh) universal code folding
        ;;(format +onsave)  ; automated prettiness
        ;;god               ; run Emacs commands without modifier keys
@@ -84,8 +83,8 @@
 
        :checkers
        syntax              ; tasing you for every semicolon you forget
-       ;;(spell +flyspell) ; tasing you for misspelling mispelling
-       ;;grammar           ; tasing grammar mistake every you make
+       ;; (spell +flyspell) ; tasing you for misspelling mispelling
+       ;; grammar           ; tasing grammar mistake every you make
 
        :tools
        ;;ansible
@@ -99,9 +98,9 @@
        lookup              ; navigate your code and its documentation
        lsp               ; M-x vscode
        magit             ; a git porcelain for Emacs
-       ;;make              ; run make tasks from Emacs
-       ;;pass              ; password manager for nerds
-       pdf               ; pdf enhancements
+       make              ; run make tasks from Emacs
+       ;; pass              ; password manager for nerds
+       ;; pdf               ; pdf enhancements
        ;;prodigy           ; FIXME managing external services & code builders
        ;;rgb               ; creating color strings
        ;;taskrunner        ; taskrunner for all your projects
@@ -117,7 +116,7 @@
        ;;agda              ; types of types of types of types...
        ;;beancount         ; mind the GAAP
        (cc +lsp)                ; C > C++ == 1
-       ;;clojure           ; java with a lisp
+       clojure           ; java with a lisp
        common-lisp       ; if you've seen one lisp, you've seen them all
        ;;coq               ; proofs-as-programs
        ;;crystal           ; ruby at the speed of c
@@ -135,7 +134,7 @@
        ;;fsharp            ; ML stands for Microsoft's Language
        ;;fstar             ; (dependent) types and (monadic) effects and Z3
        ;;gdscript          ; the language you waited for
-       ;;(go +lsp)         ; the hipster dialect
+       (go +lsp)         ; the hipster dialect
        (haskell +lsp)    ; a language that's lazier than I am
        ;;hy                ; readability of scheme w/ speed of python
        (idris +lsp)             ; a language you can depend on
@@ -143,20 +142,20 @@
        (java +lsp);+meghanada) ; the poster child for carpal tunnel syndrome
        javascript        ; all(hope(abandon(ye(who(enter(here))))))
        ;;julia             ; a better, faster MATLAB
-       ;;kotlin            ; a better, slicker Java(Script)
+       kotlin            ; a better, slicker Java(Script)
        ;;latex             ; writing papers in Emacs has never been so fun
        ;;lean              ; for folks with too much to prove
        ;;ledger            ; be audit you can be
        ;;lua               ; one-based indices? one-based indices
        markdown          ; writing docs for people to ignore
-       nim               ; python + lisp at the speed of c
+       (nim +lsp)               ; python + lisp at the speed of c
        ;;nix               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
-       ;; org               ; organize your plain life in plain text
+       org               ; organize your plain life in plain text
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
-       (python +lsp +pyright)            ; beautiful is better than ugly
+       python;; (python +lsp +pyright)            ; beautiful is better than ugly
        ;;qt                ; the 'cutest' gui framework ever
        ;;racket            ; a DSL for DSLs
        raku              ; the artist formerly known as perl6
@@ -166,14 +165,14 @@
        (rust +lsp + rustic)              ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
        ;;scala             ; java, but good
        (scheme +guile)   ; a fully conniving family of lisps
-       sh                ; she sells {ba,z,fi}sh shells on the C xor
+       (sh +lsp)                ; she sells {ba,z,fi}sh shells on the C xor
        ;;sml
        ;;solidity          ; do you need a blockchain? No.
        ;;swift             ; who asked for emoji variables?
        ;;terra             ; Earth and Moon in alignment for performance.
        ;;web               ; the tubes
        ;;yaml              ; JSON, but readable
-       ;;zig               ; C, but simpler
+       (zig +lsp)               ; C, but simpler
 
        :email
        ;;(mu4e +org +gmail)
