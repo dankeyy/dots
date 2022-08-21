@@ -19,6 +19,7 @@
 
 (defun python-buffer-config ()
     ;; (add-hook 'after-save-hook '(lambda () (mark-whole-buffer) (string-inflection-python-style-cycle))))
+    (elpy-enable)
     (setq-local compile-command
         (format "python %s" (shell-quote-argument (buffer-name)))))
 (add-hook 'python-mode-hook #'python-buffer-config)
@@ -36,11 +37,22 @@
         ;;         :dap-compilation "cargo build"
         ;;         :dap-compilation-dir "${workspaceFolder}")))
 
-(require 'dap-cpptools)
 (defun rust-buffer-config ()
         (setq-local compile-command "cargo run"))
         ;; (require 'dap-gdb-lldb)
-
+        (require 'dap-cpptools)
+    (dap-register-debug-template "Rust::CppTools Run Configuration"
+                                 (list :type "cppdbg"
+                                       :request "launch"
+                                       :name "Rust::Run"
+                                       :MIMode "gdb"
+                                       :miDebuggerPath "rust-gdb"
+                                       :environment []
+                                       :program "${workspaceFolder}/target/debug/hello / replace with binary"
+                                       :cwd "${workspaceFolder}"
+                                       :console "external"
+                                       :dap-compilation "cargo build"
+                                       :dap-compilation-dir "${workspaceFolder}"))
         ;; (setq cargo-root (projectile-project-root))
         ;; (setq rust-exe (file-name-sans-extension (buffer-name)))
 

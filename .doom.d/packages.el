@@ -5,8 +5,8 @@
 (package! elpy)
 (package! parrot)
 (package! string-inflection)
-(package! flymake-shellcheck)
-(package! ansi-color)
+;; (package! flymake-shellcheck)
+;; (package! ansi-color)
 (package! company-quickhelp)
 (package! visual-regexp)
 (package! visual-regexp-steroids)
@@ -15,6 +15,7 @@
 ;; (package! bidi)
 ;; (package! telega)
 (package! company-tabnine)
+(package! cloc)                               ;
 
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:

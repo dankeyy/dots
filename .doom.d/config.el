@@ -7,7 +7,7 @@
 (setq! doom-unicode-font (font-spec :family "Victor Mono" :size 11))
 
 ;; theme
-(setq doom-theme 'default)
+(setq doom-theme 'doom-oceanic-next)
 
 ;; just in case..
 (setq ring-bell-function 'ignore)
@@ -18,7 +18,6 @@
 
 
 ;; ma keys
-;; (global-set-key "R" 'recompile)
 (map! :nv "M-e" #'eshell)
 (map! :nv "M-s f" #'find-name-dired)
 (map! :nv "C-9" #'sp-wrap-round)
@@ -30,6 +29,11 @@
 (map! :nv "SPC p ;" #'parrot-start-animation)
 (map! :nv "SPC l" #'(lambda () (interactive) (insert "λ")))
 
+(with-eval-after-load 'company
+  (define-key company-active-map (kbd "<return>") nil)
+  (define-key company-active-map (kbd "RET") nil)
+  (define-key company-active-map (kbd "M-TAB") #'company-complete-selection))
+
 
 ;; transparency
 (set-frame-parameter (selected-frame) 'alpha '(90 . 80))
@@ -40,11 +44,11 @@
 
 
 ;; compilation hooks
-(load! "compilation-hooks.el")
+(load! "misc/compilation-hooks.el")
 
 
 ;; garbage collection
-(load! "gcmh") ; should be in misc/
+(load! "misc/gcmh") ; should be in misc/
 (gcmh-mode 1)
 
 
@@ -60,8 +64,6 @@
 (add-hook 'pdf-view-mode-hook (lambda ()
                                 (hide-mode-line-mode)
                                 (pdf-view-midnight-minor-mode)))
-;;                                 (pdf-outline)
-;;                                 (pdf-outline-toggle-subtree)))
 
 
 ;; company mode
@@ -88,10 +90,6 @@
 (setq-default explicit-shell-file-name "/bin/bash")
 
 
-;; most important part of the config
-(setq parrot-mode t)
-
-
 ;; and other visual stuff
 (setq prettify-symbols-alist '(("lambda" . 955)))
 
@@ -101,7 +99,34 @@
   (toggle-read-only))
 (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
 
+
+;;; * Highlight ansi escape sequences in exported buffers
+;;;###autoload
+(defun +eshell-ansi-buffer-output (fun object target)
+  "Interpret ansi escape sequences when redirecting to buffer."
+  (let* ((buf (and (markerp target) (marker-buffer target)))
+         (str (and buf (stringp object) (string-match-p "\e\\[" object) object)))
+    (funcall fun (if str str object) target)
+    (when buf
+      (with-current-buffer buf
+        (goto-char (point-min))
+        ;; For some reason applying this on the string and then inserting the
+        ;; colorized string is not the same as colorizing the region.
+        (ansi-color-apply-on-region (point-min) (point-max))
+        (font-lock-mode)
+        (pop-to-buffer buf)))))
+(advice-add #'eshell-output-object-to-target :around #'+eshell-ansi-buffer-output)
+
+
+
+;; most important part of the config
+(parrot-mode)
+
 (defun parrot-animate-when-compile-success (buffer result)
   (if (string-match "^finished" result)
       (parrot-start-animation)))
 (add-to-list 'compilation-finish-functions 'parrot-animate-when-compile-success)
+
+
+;; tabs | spaces
+(setq tab-width 4)
