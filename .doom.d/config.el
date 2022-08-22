@@ -35,6 +35,7 @@
   (define-key company-active-map (kbd "M-TAB") #'company-complete-selection))
 
 
+
 ;; transparency
 (set-frame-parameter (selected-frame) 'alpha '(90 . 80))
 (add-to-list 'default-frame-alist '(alpha . (85 . 85)))

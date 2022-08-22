@@ -14,9 +14,9 @@
 ;;      Alternatively, press 'gd' (or 'C-c c d') on a module to browse its
 ;;      directory (for easy access to its source code).
 
-(add-hook 'after-init-hook #'(lambda () (global-prettify-symbols-mode +1) (global-flycheck-mode +1)))
-(after! projectile (setq projectile-project-root-files-bottom-up
-        (remove ".git" projectile-project-root-files-bottom-up)))
+(add-hook 'after-init-hook #'(lambda () (global-prettify-symbols-mode +1) (global-flycheck-mode +1) (global-company-mode +1)))
+;; (after! projectile (setq projectile-project-root-files-bottom-up
+;;         (remove ".git" projectile-project-root-files-bottom-up)))
 
 
 (doom! :input
@@ -157,7 +157,7 @@
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
-       python;; (python +lsp +pyright)            ; beautiful is better than ugly
+       (python +pyright +lsp)            ; beautiful is better than ugly
        ;;qt                ; the 'cutest' gui framework ever
        ;;racket            ; a DSL for DSLs
        raku              ; the artist formerly known as perl6

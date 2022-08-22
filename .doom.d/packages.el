@@ -2,18 +2,13 @@
 
 
 (package! diff-hl)
-(package! elpy)
 (package! parrot)
 (package! string-inflection)
-;; (package! flymake-shellcheck)
-;; (package! ansi-color)
+(package! ansi-color)
 (package! company-quickhelp)
 (package! visual-regexp)
 (package! visual-regexp-steroids)
 (package! exec-path-from-shell)
-;; (package! beacon)
-;; (package! bidi)
-;; (package! telega)
 (package! company-tabnine)
 (package! cloc)                               ;
 
