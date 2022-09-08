@@ -17,7 +17,17 @@
 (setq display-line-numbers-type 'relative)
 
 
+;; compile on comint buffer
+(defun cc ()
+  (interactive)
+  (setq current-prefix-arg '(4))
+  (call-interactively 'compile))
+
+
 ;; ma keys
+(map! :nv "M-c" #'cc)
+(map! :nv "M-y" #'yank-from-kill-ring)
+(map! :nv "M-r" #'recompile)
 (map! :nv "M-e" #'eshell)
 (map! :nv "M-s f" #'find-name-dired)
 (map! :nv "C-9" #'sp-wrap-round)
@@ -27,6 +37,7 @@
 (map! :nv "SPC r" #'vr/replace)
 (map! :nv "SPC c m" #'kmacro-call-macro)
 (map! :nv "SPC p ;" #'parrot-start-animation)
+(map! :nv "SPC s g" #'poogle)
 (map! :nv "SPC l" #'(lambda () (interactive) (insert "λ")))
 
 (with-eval-after-load 'company
@@ -53,13 +64,19 @@
 (gcmh-mode 1)
 
 
+(load! "misc/topsy.el")
+(add-hook 'prog-mode-hook #'topsy-mode)
+
 ;; dap config, see: https://emacs-lsp.github.io/dap-mode/page/configuration/
 (setq dap-auto-configure-features '(sessions locals controls tooltip))
 
 
+;; jumps to py docs
+(load! "misc/poogle.el")
+
 ;; dired config
 (setq dired-kill-when-opening-new-dired-buffer t)
-
+(add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
 
 ;; pdf reading config
 (add-hook 'pdf-view-mode-hook (lambda ()
@@ -131,3 +148,5 @@
 
 ;; tabs | spaces
 (setq tab-width 4)
+
+(setq lsp-enable-file-watchers 'nil)

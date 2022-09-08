@@ -20,6 +20,9 @@
 
 
 (defun python-buffer-config ()
+    (setq lsp-pyright-use-library-code-for-types t)
+    (setq lsp-pyright-stub-path (concat (getenv "HOME") "/dev/pystubs"))
+
     (require 'lsp-pyright)
     (lsp)
     (setq-local compile-command
