@@ -8,7 +8,7 @@ super + Return
 	bspterm
 
 # Terminal (floating)
-super + shift + Return
+super + c
 	bspterm -f
 
 # Terminal (fullscreen)
@@ -91,8 +91,8 @@ XF86Audio{Next,Prev,Play,Stop}
 ##---------- Bspwm ----------##
 
 # Close App
-super + {_,shift + }q
-	bspc node -{c,k}
+super + q
+	bspc node -c
 
 # Reload Keybindings
 super + Escape
@@ -149,8 +149,8 @@ super + {Tab,grave}
 	bspc {node,desktop} -f last
 
 # Send focused window to another workspace
-super + {_,shift + }{1-8}
-	bspc {desktop -f,node -d} '^{1-8}'
+super + {_,shift + }{1-9}
+	bspc {desktop -f,node -d} '^{1-9}'
 
 # Expanding windows
 super + control + {Left,Right,Up,Down}

@@ -27,8 +27,9 @@
 ;; ma keys
 (map! :nv "M-c" #'cc)
 (map! :nv "M-y" #'yank-from-kill-ring)
-(map! :nv "M-r" #'recompile)
-(map! :nv "M-e" #'eshell)
+(map! :nv "M-v" #'recompile)
+(map! :nv "M-e" #'iedit-mode)
+(map! :nv "M-<escape>" #'keyboard-escape-quit)
 (map! :nv "M-s f" #'find-name-dired)
 (map! :nv "C-9" #'sp-wrap-round)
 (map! :nv "C-0" #'sp-unwrap-sexp)
@@ -39,6 +40,7 @@
 (map! :nv "SPC p ;" #'parrot-start-animation)
 (map! :nv "SPC s g" #'poogle)
 (map! :nv "SPC l" #'(lambda () (interactive) (insert "λ")))
+
 
 (with-eval-after-load 'company
   (define-key company-active-map (kbd "<return>") nil)
@@ -150,3 +152,7 @@
 (setq tab-width 4)
 
 (setq lsp-enable-file-watchers 'nil)
+(setq vr/engine 'python)
+
+
+(add-hook 'prog-mode-hook #'highlight-indent-guides-mode)
