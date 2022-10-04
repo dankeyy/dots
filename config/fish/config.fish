@@ -2,6 +2,14 @@ function fish_greeting
     fortune
 end
 
+function sudo --description "Replacement for Bash 'sudo !!' command to run last command using sudo."
+    if test "$argv" = !!
+    eval command sudo $history[1]
+else
+    command sudo $argv
+    end
+end
+
 alias xclip="xclip -selection c"
 alias kgrepps="sudo -S grepps $1"
 alias grep="grep --color=auto"
@@ -27,7 +35,7 @@ alias dut="youtube-dl --extract-audio --audio-format mp3"
 alias ec="emacsclient -c"
 alias et="emacsclient -t"
 alias l="ls -lah"
-alias c="clear"
+alias c="calc"
 alias gd="git diff"
 alias tb="nc termbin.com 9999"
 alias intcode="intcode/target/release/intcode"
@@ -37,8 +45,10 @@ alias exa="exa --icons"
 alias def="xdg-open"
 alias fm="pcmanfm"
 alias st="git status"
-#set -q GHCUP_INSTALL_BASE_PREFIX[1]; or set GHCUP_INSTALL_BASE_PREFIX $HOME ; set -gx PATH $HOME/.cabal/bin /home/dankey/.ghcup/bin $PATH # ghcup-env
+alias ct="~/Desktop/Cutter-v2.0.5-x64.Linux.AppImage"
+alias d8="rlwrap ~/dev/v8/v8/out/x64.debug/d8 --allow-natives-syntax"
 set -q GHCUP_INSTALL_BASE_PREFIX[1]; or set GHCUP_INSTALL_BASE_PREFIX $HOME ; set -gx PATH $HOME/.cabal/bin /home/dankey/.ghcup/bin $PATH # ghcup-env
 set -gx PATH $HOME/.local/bin $PATH
-
+set -U fish_user_paths /home/dankey/.nimble/bin $fish_user_paths
+set -U fish_user_paths /home/dankey/dev/depot_tools $fish_user_paths
 starship init fish | source

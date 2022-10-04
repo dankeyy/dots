@@ -26,8 +26,8 @@
 
 ;; ma keys
 (map! :nv "M-c" #'cc)
+(map! :nv "M-r" #'recompile)
 (map! :nv "M-y" #'yank-from-kill-ring)
-(map! :nv "M-v" #'recompile)
 (map! :nv "M-e" #'iedit-mode)
 (map! :nv "M-<escape>" #'keyboard-escape-quit)
 (map! :nv "M-s f" #'find-name-dired)
@@ -35,17 +35,26 @@
 (map! :nv "C-0" #'sp-unwrap-sexp)
 (map! :nv "SPC d" #'lsp-describe-thing-at-point)
 (map! :nv "SPC k" #'kill-compilation)
-(map! :nv "SPC r" #'vr/replace)
+(map! :nv "SPC r r" #'vr/replace)
+(map! :nv "SPC r m" #'vr/mc-mark)
+(map! :nv "SPC r q" #'vr/query-replace)
+(map! :nv "SPC r a" #'align-regexp)
 (map! :nv "SPC c m" #'kmacro-call-macro)
 (map! :nv "SPC p ;" #'parrot-start-animation)
 (map! :nv "SPC s g" #'poogle)
 (map! :nv "SPC l" #'(lambda () (interactive) (insert "λ")))
 
 
+;; company
 (with-eval-after-load 'company
   (define-key company-active-map (kbd "<return>") nil)
-  (define-key company-active-map (kbd "RET") nil)
-  (define-key company-active-map (kbd "M-TAB") #'company-complete-selection))
+  (define-key company-active-map (kbd "RET") nil))
+
+(setq company-quickhelp-mode t)
+(setq company-idle-delay 0.3)
+(setq company-show-quick-access t)
+(add-to-list 'company-backends #'company-yasnippet)
+(add-to-list 'company-backends #'company-tabnine)
 
 
 
@@ -66,11 +75,9 @@
 (gcmh-mode 1)
 
 
+;; topsy
 (load! "misc/topsy.el")
 (add-hook 'prog-mode-hook #'topsy-mode)
-
-;; dap config, see: https://emacs-lsp.github.io/dap-mode/page/configuration/
-(setq dap-auto-configure-features '(sessions locals controls tooltip))
 
 
 ;; jumps to py docs
@@ -86,16 +93,10 @@
                                 (pdf-view-midnight-minor-mode)))
 
 
-;; company mode
-(setq company-quickhelp-mode t)
-(setq company-idle-delay 0)
-(setq company-show-quick-access t)
-(add-to-list 'company-backends #'company-yasnippet)
-(add-to-list 'company-backends #'company-tabnine)
-
-
-;; telega
-(setq telega-chat-show-deleted-messages-for '(not saved-messages))
+;; Add yasnippet support for all company backends
+;; https://github.com/syl20bnr/spacemacs/pull/179
+(defvar company-mode/enable-yas t
+  "Enable yasnippet for all backends.")
 
 
 ;; scroll with cursor
@@ -113,6 +114,7 @@
 ;; and other visual stuff
 (setq prettify-symbols-alist '(("lambda" . 955)))
 
+;; comp colors
 (defun colorize-compilation-buffer ()
   (toggle-read-only)
   (ansi-color-apply-on-region compilation-filter-start (point))
@@ -148,11 +150,17 @@
 (add-to-list 'compilation-finish-functions 'parrot-animate-when-compile-success)
 
 
-;; tabs | spaces
+;; tabs bad
 (setq tab-width 4)
 
+
+;; it's slow im disabling it
 (setq lsp-enable-file-watchers 'nil)
+
+
+;; the visual replacement thingy
 (setq vr/engine 'python)
 
 
-(add-hook 'prog-mode-hook #'highlight-indent-guides-mode)
+;; fix for icons not displaying in treemacs
+(remove-hook 'doom-load-theme-hook #'doom-themes-treemacs-config)
