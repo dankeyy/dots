@@ -23,8 +23,6 @@
     (setq lsp-pyright-use-library-code-for-types t)
     (setq lsp-pyright-stub-path (concat (getenv "HOME") "/dev/pystubs"))
 
-    (require 'lsp-pyright)
-    (lsp)
     (setq-local compile-command
         (format "python %s" (shell-quote-argument (buffer-name)))))
 (add-hook 'python-mode-hook #'python-buffer-config)
