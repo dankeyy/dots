@@ -2,16 +2,37 @@
 
 (add-to-list 'load-path "misc/")
 
+;; compilation hooks
+(load! "misc/compilation-hooks.el")
+
+
+;; garbage collection
+(load! "misc/gcmh")
+(gcmh-mode 1)
+
+
+;; topsy
+(load! "misc/topsy.el")
+(add-hook 'prog-mode-hook #'topsy-mode)
+
+
+;; jump to snek docs
+(load! "misc/poogle.el")
+
+
 ;; font
-(setq doom-font (font-spec :family "Fira Code" :size 15))
+(setq  doom-font         (font-spec :family "Fira Code"   :size 15))
 (setq! doom-unicode-font (font-spec :family "Victor Mono" :size 11))
+
 
 ;; theme
 (setq doom-theme 'doom-oceanic-next)
 
+
 ;; just in case..
 (setq ring-bell-function 'ignore)
 ;; (setq x-alt-keysym 'meta)
+
 
 ;; line numbers
 (setq display-line-numbers-type 'relative)
@@ -25,25 +46,25 @@
 
 
 ;; ma keys
-(map! :nv "M-c" #'cc)
-(map! :nv "M-r" #'recompile)
-(map! :nv "M-y" #'yank-from-kill-ring)
-(map! :nv "M-e" #'iedit-mode)
+(map! :nv "M-c"        #'cc)
+(map! :nv "M-r"        #'recompile)
+(map! :nv "M-y"        #'yank-from-kill-ring)
+(map! :nv "M-e"        #'iedit-mode)
 (map! :nv "M-<escape>" #'keyboard-escape-quit)
-(map! :nv "M-s f" #'find-name-dired)
-(map! :nv "C-9" #'sp-wrap-round)
-(map! :nv "C-0" #'sp-unwrap-sexp)
-(map! :nv "SPC d" #'lsp-describe-thing-at-point)
-(map! :nv "SPC k" #'kill-compilation)
-(map! :nv "SPC r r" #'vr/replace)
-(map! :nv "SPC r m" #'vr/mc-mark)
-(map! :nv "SPC r q" #'vr/query-replace)
-(map! :nv "SPC r a" #'align-regexp)
-(map! :nv "SPC c m" #'kmacro-call-macro)
-(map! :nv "SPC p ;" #'parrot-start-animation)
-(map! :nv "SPC s g" #'poogle)
-(map! :nv "SPC g d" #'vc-msg-show)
-(map! :nv "SPC l" #'(lambda () (interactive) (insert "λ")))
+(map! :nv "M-s f"      #'find-name-dired)
+(map! :nv "C-9"        #'sp-wrap-round)
+(map! :nv "C-0"        #'sp-unwrap-sexp)
+(map! :nv "SPC d"      #'lsp-describe-thing-at-point)
+(map! :nv "SPC k"      #'kill-compilation)
+(map! :nv "SPC r r"    #'vr/replace)
+(map! :nv "SPC r m"    #'vr/mc-mark)
+(map! :nv "SPC r q"    #'vr/query-replace)
+(map! :nv "SPC r a"    #'align-regexp)
+(map! :nv "SPC c m"    #'kmacro-call-macro)
+(map! :nv "SPC p ;"    #'parrot-start-animation)
+(map! :nv "SPC s g"    #'poogle)
+(map! :nv "SPC g d"    #'vc-msg-show)
+(map! :nv "SPC l"      #'(lambda () (interactive) (insert "λ")))
 
 
 ;; company
@@ -54,6 +75,7 @@
 (setq company-quickhelp-mode t)
 (setq company-idle-delay 0.3)
 (setq company-show-quick-access t)
+(setq company-mode/enable-yas t)
 (add-to-list 'company-backends #'company-yasnippet)
 (add-to-list 'company-backends #'company-tabnine)
 
@@ -67,37 +89,16 @@
 ;; (set-frame-parameter (selected-frame) 'alpha-background 0.5)
 
 
-;; compilation hooks
-(load! "misc/compilation-hooks.el")
-
-
-;; garbage collection
-(load! "misc/gcmh") ; should be in misc/
-(gcmh-mode 1)
-
-
-;; topsy
-(load! "misc/topsy.el")
-(add-hook 'prog-mode-hook #'topsy-mode)
-
-
-;; jumps to py docs
-(load! "misc/poogle.el")
-
 ;; dired config
 (setq dired-kill-when-opening-new-dired-buffer t)
 (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
 
-;; pdf reading config
-(add-hook 'pdf-view-mode-hook (lambda ()
-                                (hide-mode-line-mode)
-                                (pdf-view-midnight-minor-mode)))
 
-
-;; Add yasnippet support for all company backends
-;; https://github.com/syl20bnr/spacemacs/pull/179
-(defvar company-mode/enable-yas t
-  "Enable yasnippet for all backends.")
+;; pdf config
+(add-hook 'pdf-view-mode-hook
+          (lambda ()
+            (hide-mode-line-mode)
+            (pdf-view-midnight-minor-mode)))
 
 
 ;; scroll with cursor
@@ -114,32 +115,6 @@
 
 ;; and other visual stuff
 (setq prettify-symbols-alist '(("lambda" . 955)))
-
-;; comp colors
-(defun colorize-compilation-buffer ()
-  (toggle-read-only)
-  (ansi-color-apply-on-region compilation-filter-start (point))
-  (toggle-read-only))
-(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
-
-
-;;; * Highlight ansi escape sequences in exported buffers
-;;;###autoload
-(defun +eshell-ansi-buffer-output (fun object target)
-  "Interpret ansi escape sequences when redirecting to buffer."
-  (let* ((buf (and (markerp target) (marker-buffer target)))
-         (str (and buf (stringp object) (string-match-p "\e\\[" object) object)))
-    (funcall fun (if str str object) target)
-    (when buf
-      (with-current-buffer buf
-        (goto-char (point-min))
-        ;; For some reason applying this on the string and then inserting the
-        ;; colorized string is not the same as colorizing the region.
-        (ansi-color-apply-on-region (point-min) (point-max))
-        (font-lock-mode)
-        (pop-to-buffer buf)))))
-(advice-add #'eshell-output-object-to-target :around #'+eshell-ansi-buffer-output)
-
 
 
 ;; most important part of the config
