@@ -1,41 +1,26 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
 (add-to-list 'load-path "misc/")
-
-;; compilation hooks
 (load! "misc/compilation-hooks.el")
+(load! "misc/poogle.el") ;; jump to snek docs
+(load! "misc/topsy.el")  ;; shows topmost definition
+(load! "misc/gcmh.el")   ;; garbage collection
 
-
-;; garbage collection
-(load! "misc/gcmh")
 (gcmh-mode 1)
-
-
-;; topsy
-(load! "misc/topsy.el")
 (add-hook 'prog-mode-hook #'topsy-mode)
 
 
-;; jump to snek docs
-(load! "misc/poogle.el")
+;; how stuff looks
+(setq doom-theme 'doom-oceanic-next)
 
-
-;; font
 (setq  doom-font         (font-spec :family "Fira Code"   :size 15))
 (setq! doom-unicode-font (font-spec :family "Victor Mono" :size 11))
 
-
-;; theme
-(setq doom-theme 'doom-oceanic-next)
+(setq display-line-numbers-type 'relative)
 
 
 ;; just in case..
 (setq ring-bell-function 'ignore)
-;; (setq x-alt-keysym 'meta)
-
-
-;; line numbers
-(setq display-line-numbers-type 'relative)
 
 
 ;; compile on comint buffer
@@ -80,7 +65,6 @@
 (add-to-list 'company-backends #'company-tabnine)
 
 
-
 ;; transparency
 (set-frame-parameter (selected-frame) 'alpha '(90 . 80))
 (add-to-list 'default-frame-alist '(alpha . (85 . 85)))
@@ -111,10 +95,6 @@
 ;; shell config
 (exec-path-from-shell-initialize)
 (setq-default explicit-shell-file-name "/bin/bash")
-
-
-;; and other visual stuff
-(setq prettify-symbols-alist '(("lambda" . 955)))
 
 
 ;; most important part of the config
