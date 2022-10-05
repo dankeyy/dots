@@ -42,6 +42,7 @@
 (map! :nv "SPC c m" #'kmacro-call-macro)
 (map! :nv "SPC p ;" #'parrot-start-animation)
 (map! :nv "SPC s g" #'poogle)
+(map! :nv "SPC g d" #'vc-msg-show)
 (map! :nv "SPC l" #'(lambda () (interactive) (insert "λ")))
 
 
@@ -164,3 +165,8 @@
 
 ;; fix for icons not displaying in treemacs
 (remove-hook 'doom-load-theme-hook #'doom-themes-treemacs-config)
+
+
+;; adjusted from https://github.com/redguardtoo/vc-msg
+;; to make vc-msg's code option use magit
+(setq vc-msg-git-show-commit-function 'magit-show-commit)
