@@ -29,12 +29,13 @@
   (setq current-prefix-arg '(4))
   (call-interactively 'compile))
 
+;; cursed ik
 (defun simulate-esc ()
   (interactive)
   (execute-kbd-macro (kbd "<escape>")))
 
+
 ;; ma keys
-;; (map! :leader "s m" nil)
 (map! :nv "M-c"        #'cc)
 (map! :nv "M-r"        #'recompile)
 (map! :nv "M-y"        #'yank-from-kill-ring)
@@ -58,10 +59,10 @@
 (map! :nv "g b"        #'pop-global-mark)
 (map! :nv "SPC r s"    #'string-rectangle)
 (map! :nv "SPC r k"    #'kill-rectangle)
-(map! :nv "C-f"    #'vr/isearch-forward)
-(map! :nv "C-b"    #'vr/isearch-backward)
+(map! :nv "C-f"        #'vr/isearch-forward)
+(map! :nv "C-b"        #'vr/isearch-backward)
 (map! :nv "SPC l"      #'(lambda () (interactive) (insert "λ")))
-(map! :leader "s m"    #'(lambda () (interactive) (rectangle-mark-mode) (simulate-esc) (simulate-esc))) ;; set mark for rectangle-mode
+(map! :leader "s m"    #'(lambda () (interactive) (rectangle-mark-mode) (simulate-esc) (simulate-esc))) ;; set mark for rectangle-mode, very hacky but works
 
 
 ;; company
