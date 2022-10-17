@@ -2,7 +2,7 @@
 (defun c-buffer-config()
     (load! "disaster")
     (setq-local compile-command
-        (format "gcc -Wall %s -o %s && ./%s"
+        (format "gcc -Wall %s -o %s.out && ./%s.out"
                 (shell-quote-argument (buffer-name))
                 (file-name-sans-extension (buffer-name))
                 (file-name-sans-extension (buffer-name)))))
@@ -12,7 +12,7 @@
 (defun cpp-buffer-config()
     (load! "disaster")
     (setq-local compile-command
-        (format "g++ -Wall %s -o %s && ./%s"
+        (format "g++ -Wall %s -o %s.out && ./%s.out"
                 (shell-quote-argument (buffer-name))
                 (file-name-sans-extension (buffer-name))
                 (file-name-sans-extension (buffer-name)))))
@@ -20,8 +20,9 @@
 
 
 (defun python-buffer-config ()
-    (setq lsp-pyright-use-library-code-for-types t)
-    (setq lsp-pyright-stub-path (concat (getenv "HOME") "/dev/pystubs"))
+  (load! "disaster")
+  (setq lsp-pyright-use-library-code-for-types t)
+  (setq lsp-pyright-stub-path (concat (getenv "HOME") "/dev/pystubs"))
 
     (setq-local compile-command
         (format "python %s" (shell-quote-argument (buffer-name)))))
@@ -53,7 +54,10 @@
 
 
 (add-hook 'zig-mode-hook
-    (lambda () (setq-local compile-command
-        (format "zig build-exe %s && ./%s"
+    (lambda ()
+      (load! "disaster")
+      (setq-local compile-command
+        (format "zig build-exe %s -o %s.out && ./%s.out"
         (shell-quote-argument (buffer-name))
+        (file-name-sans-extension (buffer-name))
         (file-name-sans-extension (buffer-name))))))

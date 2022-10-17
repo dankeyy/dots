@@ -1,11 +1,14 @@
-;;; disaster.el --- Disassemble C/C++ code under cursor in Emacs
+;;; disaster.el --- Disassemble C, C++ or Fortran code under cursor -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2013 Justine Tunney.
+;; Copyright (C) 2013-2022 Justine Tunney.
 
 ;; Author: Justine Tunney <jtunney@gmail.com>
+;;         Abdelhak Bougouffa <abougouffa@fedoraproject.org>
+;; Maintainer: Abdelhak Bougouffa <abougouffa@fedoraproject.org>
 ;; Created: 2013-03-02
-;; Version: 0.1
-;; Keywords: tools
+;; Version: 1.0
+;; Package-Requires: ((emacs "27.1"))
+;; Keywords: tools c
 ;; URL: https://github.com/jart/disaster
 
 ;; This file is not part of GNU Emacs.
@@ -27,28 +30,59 @@
 
 ;;; Commentary:
 
-;; ![Screenshot](http://i.imgur.com/kMoN1m6.png)
+;; ![Screenshot of a C example](screenshot-c.png)
+;;
+;; ![Screenshot of a Fortran example](screenshot-fortran.png)
 ;;
 ;; Disaster lets you press `C-c d` to see the compiled assembly code for the
-;; C/C++ file you're currently editing. It even jumps to and highlights the
-;; line of assembly corresponding to the line beneath your cursor.
+;; C, C++ or Fortran file you're currently editing. It even jumps to and
+;; highlights the line of assembly corresponding to the line beneath your cursor.
 ;;
-;; It works by creating a `.o` file using make (if you have a Makefile) or the
-;; default system compiler. It then runs that file through objdump to generate
-;; the human-readable assembly.
+;; It works by creating a `.o` file using `make` (if you have a Makefile), or
+;; `cmake` (if you have a `compile_commands.json` file) or the default system
+;; compiler. It then runs that file through `objdump` to generate the
+;; human-readable assembly.
 
 ;;; Installation:
 
-;; Make sure to place `disaster.el` somewhere in the load-path and add the
-;; following lines to your `.emacs` file to enable the `C-c d` shortcut to
-;; invoke `disaster':
+;; Make sure to place `disaster.el` somewhere in the `load-path`, then you should
+;; be able to run `M-x disaster`. If you want, you add the following lines to
+;; your `.emacs` file to register the `C-c d` shortcut for invoking `disaster`:
 ;;
-;;     (add-to-list 'load-path "/PATH/TO/DISASTER")
-;;     (require 'disaster)
-;;     (define-key c-mode-base-map (kbd "C-c d") 'disaster)
+;; ```elisp
+;; (add-to-list 'load-path "/PATH/TO/DISASTER")
+;; (require 'disaster)
+;; (define-key c-mode-map (kbd "C-c d") 'disaster)
+;; (define-key fortran-mode-map (kbd "C-c d") 'disaster)
+;; ```
+
+;; #### Doom Emacs
+
+;; For Doom Emacs users, you can add this snippet to your `packages.el`.
 ;;
+;; ```elisp
+;; (package! disaster
+;;   :recipe (:host github :repo "jart/disaster"))
+;; ```
+;;
+;; And this to your `config.el`:
+;;
+;; ```elisp
+;; (use-package! disaster
+;;   :commands (disaster)
+;;   :init
+;;   ;; If you prefer viewing assembly code in `nasm-mode` instead of `asm-mode`
+;;   (setq disaster-assembly-mode 'nasm-mode)
+;;
+;;   (map! :localleader
+;;         :map (c++-mode-map c-mode-map fortran-mode-map)
+;;         :desc "Disaster" "d" #'disaster))
+;; ```
 
 ;;; Code:
+
+(require 'json)
+(require 'vc)
 
 (defgroup disaster nil
   "Disassemble C/C++ under cursor (Works best with Clang)."
@@ -60,6 +94,11 @@
   :group 'disaster
   :type 'string)
 
+(defcustom disaster-assembly-mode 'asm-mode
+  "Which mode to use to view assembly code."
+  :group 'disaster
+  :type '(choice asm-mode nasm-mode))
+
 (defcustom disaster-cc (or (getenv "CC") "cc")
   "The command for your C compiler."
   :group 'disaster
@@ -67,6 +106,17 @@
 
 (defcustom disaster-cxx (or (getenv "CXX") "c++")
   "The command for your C++ compiler."
+  :group 'disaster
+  :type 'string)
+
+
+(defcustom disaster-fortran (or (getenv "FORTRAN") "gfortran")
+  "The command for your Fortran compiler."
+  :group 'disaster
+  :type 'string)
+
+(defcustom disaster-zig (or (getenv "ZIG") "zig")
+  "The command for your zig compiler."
   :group 'disaster
   :type 'string)
 
@@ -82,51 +132,167 @@
   :group 'disaster
   :type 'string)
 
-(defcustom disaster-objdump "objdump -d -M intel -Sl --no-show-raw-insn"
+
+(defcustom disaster-fortranflags (or (getenv "FORTRANFLAGS")
+                                     "-march=native")
+  "Command line options to use when compiling Fortran."
+  :group 'disaster
+  :type 'string)
+
+(defcustom disaster-zigflags (or (getenv "ZIGFLAGS")
+                                     "build-obj")
+  "Command line options to use when compiling Fortran."
+  :group 'disaster
+  :type 'string)
+
+(defcustom disaster-objdump
+  (concat (if (eq system-type 'darwin) "gobjdump" "objdump")
+          " -d -M intel -Sl --no-show-raw-insn")
   "The command name and flags for running objdump."
   :group 'disaster
   :type 'string)
 
-(defcustom disaster-buffer-compiler "*compilation*"
+(defcustom disaster-buffer-compiler "*disaster-compilation*"
   "Buffer name to use for assembler output."
   :group 'disaster
   :type 'string)
 
-(defcustom disaster-buffer-assembly "*assembly*"
+(defcustom disaster-buffer-assembly "*disaster-assembly*"
   "Buffer name to use for objdump assembly output."
   :group 'disaster
   :type 'string)
 
 (defcustom disaster-project-root-files
-  (list (list ".git/")         ;; Git directory is almost always project root.
-        (list "setup.py"       ;; Python apps.
-              "package.json")  ;; node.js apps.
-        (list "Makefile"))     ;; Makefiles are sometimes in subdirectories.
-  "List of lists of files that may indicate software project root
-   directory. Sublist are ordered from highest to lowest
-   precedence."
+  (list (list ".projectile")    ;; Projectile project root.
+        (list "setup.py"        ;; Python apps.
+              "package.json")   ;; node.js apps.
+        (list "CMakeLists.txt") ;; CMake files are sometimes in subdirectories.
+        (list "Makefile"))      ;; Makefiles are sometimes in subdirectories.
+  "List of lists of files that may indicate software project root directory.
+Sublist are ordered from highest to lowest precedence."
   :group 'disaster
   :type '(repeat (repeat string)))
 
-(defvar save-place)
+(defcustom disaster-c-regexp "\\.c$"
+  "Regexp for C source files."
+  :group 'disaster
+  :type 'regexp)
 
-;;;###autoload
+(defcustom disaster-cpp-regexp "\\.c\\(c\\|pp\\|xx\\)$"
+  "Regexp for C++ source files."
+  :group 'disaster
+  :type 'regexp)
+
+(defcustom disaster-fortran-regexp "\\.f\\(or\\|90\\|95\\|0[38]\\)?$"
+  "Regexp for Fortran source files."
+  :group 'disaster
+  :type 'regexp)
+
+(defcustom disaster-zig-regexp "\\.zig$"
+  "Regexp for Zig source files."
+  :group 'disaster
+  :type 'regexp)
+
+(defcustom disaster-python-regexp "\\.py$"
+  "Regexp for Python source files."
+  :group 'disaster
+  :type 'regexp)
+
+
+;;;autoload
 (defvar disaster-find-build-root-functions nil
   "Functions to call to get the build root directory from the project directory.
 If nil is returned, the next function will be tried.  If all
 functions return nil, the project root directory will be used as
 the build directory.")
 
+
+(defun disaster-create-compile-command-make (make-root cwd rel-obj obj-file proj-root rel-file file)
+  "Create compile command.
+MAKE-ROOT: path to build root,
+CWD: path to current source file,
+REL-OBJ: path to object file (relative to project root),
+OBJ-FILE: full path to object file (build root!)
+PROJ-ROOT: path to project root, REL-FILE FILE."
+  (if make-root
+      ;; if-then
+      ;; (cond ((equal cwd make-root)
+      ;;        (format "make %s %s" disaster-make-flags (shell-quote-argument rel-obj)))
+      ;;       (t (format "make %s -C %s %s"
+      ;;                  disaster-make-flags make-root rel-obj)))
+    ;; if-else
+    (cond ((string-match-p disaster-cpp-regexp file)
+           (format "%s %s -g -c -o %s %s"
+                   disaster-cxx disaster-cxxflags
+                   (shell-quote-argument obj-file) (shell-quote-argument file)))
+          ((string-match-p disaster-c-regexp file)
+           (format "%s %s -g -c -o %s %s"
+                   disaster-cc disaster-cflags
+                   (shell-quote-argument obj-file) (shell-quote-argument file)))
+          ((string-match-p disaster-fortran-regexp file)
+           (format "%s %s -g -c -o %s %s"
+                   disaster-fortran disaster-fortranflags
+                   (shell-quote-argument obj-file) (shell-quote-argument file)))
+          ((string-match-p disaster-zig-regexp file)
+           (format "%s %s %s"
+                   disaster-zig disaster-zigflags (shell-quote-argument file)))
+          (t (warn "Unsupported file format" file)))))
+
+
+(defun disaster-create-compile-command-cmake (make-root cwd rel-obj obj-file proj-root rel-file)
+  "Create compile command for a CMake-based project.
+MAKE-ROOT: path to build root,
+CWD: path to current source file,
+REL-OBJ: path to object file (relative to project root),
+OBJ-FILE: full path to object file (build root!)
+PROJ-ROOT: path to project root, REL-FILE FILE."
+  (let* ((json-object-type 'hash-table)
+         (json-array-type 'list)
+         (json-key-type 'string)
+         (json (json-read-file (concat make-root "/compile_commands.json"))))
+    (catch 'compile-command
+      (dolist (obj json)
+        (when (string-equal (gethash "file" obj) (concat proj-root rel-file))
+          (throw 'compile-command (gethash "command" obj)))))))
+
+(defun disaster-get-object-file-path-cmake (compile-cmd)
+  "Get the .o object file name from a full COMPILE-CMD."
+  (let* ((parts (split-string compile-cmd " "))
+         (break-on-next nil))
+    (catch 'object-file
+      (dolist (part parts)
+        (if (string-equal "-o" part)
+            (setq break-on-next t)
+          (when break-on-next
+            (throw 'object-file part)))))))
+
+
+(defun disaster-create-compile-command (use-cmake make-root cwd rel-obj obj-file proj-root rel-file file &optional bytecode)
+  "Create the actual compile command.
+USE-CMAKE: non NIL to use CMake, NIL to use Make or default compiler options,
+MAKE-ROOT: path to build root,
+CWD: path to current source file,
+REL-OBJ: path to object file (relative to project root),
+OBJ-FILE: full path to object file (build root!)
+PROJ-ROOT: path to project root, REL-FILE FILE."
+  (when (eq bytecode nil)
+    (if use-cmake
+        (disaster-create-compile-command-cmake make-root cwd rel-obj obj-file proj-root rel-file)
+    (disaster-create-compile-command-make make-root cwd rel-obj obj-file proj-root rel-file file))))
+
+
 ;;;###autoload
-(defun disaster (&optional file line)
-  "Shows assembly code for current line of C/C++ file.
+(defun disaster (&optional file line flags)
+  "Show assembly code for current line of C/C++ file.
 
 Here's the logic path it follows:
 
+- Is there a complile_commands.json in this directory? Get the object file
+  name for the current file, and run it associated command.
 - Is there a Makefile in this directory? Run `make bufname.o`.
 - Or is there a Makefile in a parent directory? Run `make -C .. bufname.o`.
-- Or is this a C file? Run `cc -g -O3 -c -o bufname.o bufname.c`
-- Or is this a C++ file? Run `c++ -g -O3 -c -o bufname.o bufname.c`
+- Or is this a C file? Run `cc -g -c -o bufname.o bufname.c`
+- Or is this a C++ file? Run `c++ -g -c -o bufname.o bufname.c`
 - If build failed, display errors in compile-mode.
 - Run objdump inside a new window while maintaining focus.
 - Jump to line matching current line.
@@ -135,95 +301,159 @@ If FILE and LINE are not specified, the current editing location
 is used."
   (interactive)
   (save-buffer)
-  (let* ((file (or file (file-name-nondirectory (buffer-file-name))))
-         (line (or line (line-number-at-pos)))
+  (let* ((file      (or file (file-name-nondirectory (buffer-file-name))))
+         (line      (or line (line-number-at-pos)))
          (file-line (format "%s:%d" file line))
-         (makebuf (get-buffer-create disaster-buffer-compiler))
-         (asmbuf (get-buffer-create disaster-buffer-assembly)))
-    (if (not (string-match "\\.c[cp]?p?$" file))
-        (message "Not C/C++ non-header file")
-      (let* ((cwd (file-name-directory (expand-file-name (buffer-file-name))))
-             (proj-root (disaster-find-project-root nil file))
-	     (make-root (disaster-find-build-root proj-root))
-	     (rel-file (if proj-root
-			   (file-relative-name file proj-root)
-			 file))
-	     (rel-obj (concat (file-name-sans-extension rel-file) ".o"))
-	     (obj-file (concat make-root rel-obj))
-             (cc (if make-root
-                     (if (equal cwd make-root)
-                         (format "make %s %s" disaster-make-flags (shell-quote-argument rel-obj))
-                       (format "make %s -C %s %s"
-                               disaster-make-flags make-root
-                               rel-obj))
-                   (if (string-match "\\.c[cp]p?$" file)
-                       (format "%s %s -g -c -o %s %s"
-                               disaster-cxx disaster-cxxflags
-                               (shell-quote-argument obj-file) (shell-quote-argument file))
-                     (format "%s %s -g -c -o %s %s"
-                             disaster-cc disaster-cflags
-                             (shell-quote-argument obj-file) (shell-quote-argument file)))))
-             (dump (format "%s %s" disaster-objdump
-			   (shell-quote-argument (concat make-root rel-obj))))
-             (line-text (buffer-substring-no-properties
-                         (point-at-bol)
-                         (point-at-eol))))
-        (if (and (eq 0 (progn
-                         (message (format "Running: %s" cc))
-                         (shell-command cc makebuf)))
-                 (file-exists-p obj-file))
-            (when (eq 0 (progn
-                          (message (format "Running: %s" dump))
-                          (shell-command dump asmbuf)))
-              (kill-buffer makebuf)
-              (with-current-buffer asmbuf
-                ;; saveplace.el will prevent us from hopping to a line.
-                (set (make-local-variable 'save-place) nil)
-                (asm-mode)
-                (disaster--shadow-non-assembly-code))
-              (let ((oldbuf (current-buffer)))
-                (switch-to-buffer-other-window asmbuf)
-                (goto-char 0)
-                (if (or (search-forward line-text nil t)
-                        (search-forward file-line nil t))
-                    (progn
-                      (recenter)
-                      (overlay-put (make-overlay (point-at-bol)
-                                                 (1+ (point-at-eol)))
-                                   'face 'region))
+         (makebuf   (get-buffer-create disaster-buffer-compiler))
+         (asmbuf    (get-buffer-create disaster-buffer-assembly)))
+
+    (if (or (string-match-p disaster-c-regexp file)
+            (string-match-p disaster-cpp-regexp file)
+            (string-match-p disaster-fortran-regexp file)
+            (string-match-p disaster-zig-regexp file)
+            (string-match-p disaster-python-regexp file))
+
+        (let* ((cwd       (file-name-directory (expand-file-name (buffer-file-name)))) ;; path to current source file
+               (proj-root (disaster-find-project-root nil file)) ;; path to project root
+               (use-cmake (file-exists-p (concat proj-root "/compile_commands.json")))
+               (bytecode  (string-match-p disaster-python-regexp file))
+               (make-root (disaster-find-build-root use-cmake proj-root)) ;; path to build root
+               (rel-file  (if proj-root ;; path to source file (relative to project root)
+                              (file-relative-name file proj-root)
+                            file))
+               (rel-obj   (concat (file-name-sans-extension rel-file) ".o")) ;; path to object file (relative to project root)
+               (obj-file  (concat make-root rel-obj)) ;; full path to object file (build root!)
+               (cc        (disaster-create-compile-command use-cmake make-root cwd rel-obj obj-file proj-root rel-file file bytecode))
+               (dump      (format "%s %s" disaster-objdump
+                                  (shell-quote-argument (concat make-root rel-obj))))
+               (line-text (buffer-substring-no-properties
+                           (point-at-bol)
+                           (point-at-eol))))
+
+          ;; For CMake, read the object file from compile_commands.json
+          (when use-cmake
+            (let ((tmp (disaster-get-object-file-path-cmake cc)))
+              (setq obj-file (format "%s/%s" make-root tmp)
+                    cc       (format "cmake --build %s --target %s" make-root tmp)
+                    dump     (format "%s %s" disaster-objdump
+                                     (shell-quote-argument obj-file)))))
+
+          (when bytecode
+            (setq dump (format "pydump %s" buffer-file-name)))
+
+          (if (or
+                bytecode
+                (and (eq 0 (progn
+                        (message (format "Running: %s" cc))
+                        (shell-command cc makebuf)))
+                     (file-exists-p obj-file)))
+
+              (when (eq 0 (progn
+                            (message (format "Running: %s" dump))
+                            (shell-command dump asmbuf)))
+                (kill-buffer makebuf)
+                (with-current-buffer asmbuf
+                  ;; saveplace.el will prevent us from hopping to a line.
+                  (set (make-local-variable 'save-place-mode) nil)
+                  ;; Call the configured mode `asm-mode' or `nasm-mode'
+                  (when (fboundp disaster-assembly-mode)
+                    (funcall disaster-assembly-mode))
+                  (disaster--shadow-non-assembly-code))
+                (let ((oldbuf (current-buffer)))
+                  (switch-to-buffer-other-window asmbuf)
+                  (goto-char 0)
+                  (if
+                      (search-forward file-line nil t)
+                      (progn
+                        (search-forward line-text nil t)
+                        (recenter)
+                        (overlay-put (make-overlay (point-at-bol)
+                                                   (1+ (point-at-eol)))
+                                     'face 'region))
+
                     (message "Couldn't find corresponding assembly line."))
-                (switch-to-buffer-other-window oldbuf)))
-          (with-current-buffer makebuf
-            (save-excursion
-              (goto-char 0)
-              (insert (concat cc "\n")))
-            (compilation-mode)
-            (display-buffer makebuf)))))))
+                  (switch-to-buffer-other-window oldbuf)))
+
+            (with-current-buffer makebuf
+              (save-excursion
+                (goto-char 0)
+                (insert (concat cc "\n")))
+              (compilation-mode)
+              (display-buffer makebuf))))
+      (message "Unsupported file format"))))
+
+
+(defun disaster-jump()
+  "After disaster was ran at least once and an instance buffer is up,
+jump back from assembly block to corresponding source line code.
+Note this also works in the regular sense.
+If disaster instance is up, you may use this function
+to jump to the assembly without re-compiling and initializing disaster."
+  (interactive)
+
+  (let*
+     ((pathline-regexp "^/[/a-zA-Z_\ \-]+.[a-zA-Z]+:[0-9]+$")
+      (eval-disline (lambda () (buffer-substring-no-properties (point-at-bol) (1+ (point-at-eol))))))
+
+    (if buffer-file-name
+        ;; when in source code buffer
+        (let*
+            ((source-buffer-name (buffer-file-name))
+             (source-line-number (line-number-at-pos)))
+            (progn
+              (switch-to-buffer-other-window disaster-buffer-assembly)
+              (goto-char (point-min))
+              (search-forward (format "%s:%d" source-buffer-name source-line-number))))
+
+        ;; else, when in *disaster-assembly* buffer
+        (when (or
+               (string-match pathline-regexp (funcall eval-disline))
+               (search-backward-regexp pathline-regexp nil t))
+
+          (let*
+              ((res (split-string (funcall eval-disline) ":"))
+               (path (car res))
+               (lineno (nth 1 res)))
+
+              (progn
+                (message lineno)
+                (switch-to-buffer-other-window (get-file-buffer path))
+                (goto-line (string-to-number lineno))))))))
+
 
 (defun disaster--shadow-non-assembly-code ()
-  "Scans current buffer, which should be in asm-mode, and uses
-the standard `shadow' face for lines that don't appear to contain
+  "Scans current buffer, which should be in `asm-mode'.
+Uses the standard `shadow' face for lines that don't appear to contain
 assembly code."
   (remove-overlays)
   (save-excursion
     (goto-char 0)
     (while (not (eobp))
       (beginning-of-line)
-      (if (not (looking-at "[ \t]+[a-f0-9]+:[ \t]+"))
+      (when (and
+              ;; note adding the following two regexes changes the highlighting of
+              ;; not only pydump but also objdump which has similar patterns
+              ;; (which for me are ok to highlight)
+              ;; pay attention when adding more modes in the future
+              (not (looking-at "[\s]+[0-9]+"))
+              (not (looking-at "Disassembly of"))
+              (not (looking-at "[ \t]+[a-fA-Z0-9]+:[ \t]")))
+
           (let ((eol (save-excursion (end-of-line) (point))))
             (overlay-put (make-overlay (point) eol)
                          'face 'shadow)))
       (forward-line))))
 
+
 (defun disaster--find-parent-dirs (&optional file)
-  "Returns a list of parent directories with trailing slashes.
+  "Return a list of parent directories with trailing slashes.
 
 For example:
 
     (disaster--find-parent-dirs \"/home/jart/disaster-disaster.el\")
-    => (\"/home/jart/disaster-\" \"/home/jart/\" \"/home/\" \"/\")
+    => (\"/home/jart/\" \"/home/\" \"/\")
 
-FILE defaults to `buffer-file-name'."
+FILE default to `w/function buffer-file-name'."
   (let ((res nil)
         (dir (file-name-directory
               (expand-file-name (or file (buffer-file-name))))))
@@ -233,11 +463,10 @@ FILE defaults to `buffer-file-name'."
                     (substring dir 0 (+ 1 (match-beginning 0))))))
     (reverse res)))
 
+
 (defun disaster--dir-has-file (dir file)
-  "Returns t if DIR contains FILE (or any file if FILE is a list).
-
+  "Return t if DIR contain FILE (or any file if FILE is a list).
 For example:
-
     (disaster--dir-has-file \"/home/jart/\" \".bashrc\")
     (disaster--dir-has-file \"/home/jart/\" (list \".bashrc\" \".screenrc\"))"
   (let ((res nil)
@@ -250,12 +479,15 @@ For example:
             files (cdr files)))
     res))
 
+
 (defun disaster-find-project-root (&optional looks file)
   "General-purpose Heuristic to detect bottom directory of project.
 
-This works by scanning parent directories of FILE (using
-`disaster--find-parent-dirs') for certain types of files like a
-`.git/` directory or a `Makefile` (which is less preferred).
+First, this will try to use `(vc-root-dir)' to guess the project
+root directory, and falls back to manual check wich works by scanning
+parent directories of FILE (using `disaster--find-parent-dirs') for certain
+types of files like a `.projectile` file or a `Makefile` (which is less
+preferred).
 
 The canonical structure of LOOKS is a list of lists of files
 to look for in each parent directory where sublists are ordered
@@ -263,35 +495,50 @@ from highest precedence to lowest.  However you may specify
 LOOKS as a single string or a list of strings for your
 convenience. If LOOKS is not specified, it'll default to
 `disaster-project-root-files'."
-  (let ((res nil)
-        (looks (if looks
-                   (if (listp looks)
-                       (if (listp (car looks))
-                           looks
-                         (list looks))
-                     (list (list looks)))
-                 disaster-project-root-files))
-        (parent-dirs (disaster--find-parent-dirs file)))
+  (let* ((buffer (get-file-buffer (or file (buffer-file-name))))
+         (res (when buffer
+                (with-current-buffer buffer
+                  (when (vc-root-dir)
+                    (expand-file-name (vc-root-dir))))))
+         (looks (if looks
+                    (if (listp looks)
+                        (if (listp (car looks))
+                            looks
+                          (list looks))
+                      (list (list looks)))
+                  disaster-project-root-files))
+         (parent-dirs (disaster--find-parent-dirs file)))
     (while (and looks (null res))
       (let ((parents parent-dirs))
-	(while (and parents (null res))
-	  (setq res (if (disaster--dir-has-file
-			 (car parents) (car looks))
-			(car parents))
-		parents (cdr parents))))
+        (while (and parents (null res))
+          (setq res (when (disaster--dir-has-file (car parents) (car looks))
+                      (car parents))
+                parents (cdr parents))))
       (setq looks (cdr looks)))
     res))
 
-(defun disaster-find-build-root (project-root)
-  (and project-root
-       (or (let (build-root
-		 (funcs disaster-find-build-root-functions))
-	     (while (and (null build-root) funcs)
-	       (setq build-root (funcall (car funcs) project-root)
-		     funcs (cdr funcs)))
-	     (and build-root
-		  (file-name-as-directory build-root)))
-	   project-root)))
+
+(defun disaster-find-build-root (use-cmake project-root)
+  "Find the root of build directory.
+USE-CMAKE: non nil to use CMake's compile_commands.json,
+PROJECT-ROOT: root directory of the project."
+  (if use-cmake
+      (progn
+        (let* ((json-object-type 'hash-table)
+               (json-array-type 'list)
+               (json-key-type 'string)
+               (json (json-read-file (concat project-root "/compile_commands.json"))))
+          (gethash "directory" (car json))))
+    (and project-root
+         (or (let (build-root
+                   (funcs disaster-find-build-root-functions))
+               (while (and (null build-root) funcs)
+                 (setq build-root (funcall (car funcs) project-root)
+                       funcs (cdr funcs)))
+               (and build-root
+                    (file-name-as-directory build-root)))
+             project-root))))
+
 
 (provide 'disaster)
 

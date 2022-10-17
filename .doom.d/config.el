@@ -29,8 +29,12 @@
   (setq current-prefix-arg '(4))
   (call-interactively 'compile))
 
+(defun simulate-esc ()
+  (interactive)
+  (execute-kbd-macro (kbd "<escape>")))
 
 ;; ma keys
+;; (map! :leader "s m" nil)
 (map! :nv "M-c"        #'cc)
 (map! :nv "M-r"        #'recompile)
 (map! :nv "M-y"        #'yank-from-kill-ring)
@@ -39,7 +43,9 @@
 (map! :nv "M-s f"      #'find-name-dired)
 (map! :nv "C-9"        #'sp-wrap-round)
 (map! :nv "C-0"        #'sp-unwrap-sexp)
-(map! :nv "SPC d"      #'lsp-describe-thing-at-point)
+(map! :nv "SPC d a"    #'disaster)
+(map! :nv "SPC d j"    #'disaster-jump)
+(map! :nv "SPC d t"    #'lsp-describe-thing-at-point)
 (map! :nv "SPC k"      #'kill-compilation)
 (map! :nv "SPC r r"    #'vr/replace)
 (map! :nv "SPC r m"    #'vr/mc-mark)
@@ -49,7 +55,13 @@
 (map! :nv "SPC p ;"    #'parrot-start-animation)
 (map! :nv "SPC s g"    #'poogle)
 (map! :nv "SPC g d"    #'vc-msg-show)
+(map! :nv "g b"        #'pop-global-mark)
+(map! :nv "SPC r s"    #'string-rectangle)
+(map! :nv "SPC r k"    #'kill-rectangle)
+(map! :nv "C-f"    #'vr/isearch-forward)
+(map! :nv "C-b"    #'vr/isearch-backward)
 (map! :nv "SPC l"      #'(lambda () (interactive) (insert "λ")))
+(map! :leader "s m"    #'(lambda () (interactive) (rectangle-mark-mode) (simulate-esc) (simulate-esc))) ;; set mark for rectangle-mode
 
 
 ;; company
@@ -125,3 +137,6 @@
 ;; adjusted from https://github.com/redguardtoo/vc-msg
 ;; to make vc-msg's code option use magit
 (setq vc-msg-git-show-commit-function 'magit-show-commit)
+
+;; line textwrap
+(global-visual-line-mode t)

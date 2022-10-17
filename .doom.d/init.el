@@ -15,9 +15,10 @@
 ;;      directory (for easy access to its source code).
 
 (add-hook 'after-init-hook #'(lambda () (global-prettify-symbols-mode +1) (global-flycheck-mode +1) (global-company-mode +1)))
-;; (after! projectile (setq projectile-project-root-files-bottom-up
-;;         (remove ".git" projectile-project-root-files-bottom-up)))
 
+(setq native-comp-deferred-compilation nil)
+(after! (doom-packages straight)
+  (setq straight--native-comp-available t))
 
 (doom! :input
        ;;chinese
