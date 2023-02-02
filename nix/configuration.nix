@@ -96,9 +96,6 @@
     # thunderbird
     ];
   };
-
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
   
   # virtualisation
   networking.firewall.trustedInterfaces = [ "virbr0" "virbr1" ];
@@ -127,7 +124,7 @@
   programs.partition-manager.enable = true;
   programs.kdeconnect.enable = true;
   
-  # services
+  # some more general services
   services.emacs.package = pkgs.emacsPgtk;  
   services.mullvad-vpn.enable = true;
   services.earlyoom.enable = true;
@@ -228,13 +225,15 @@
     keep-outputs = true;
     keep-derivations = true;
   };
+
+  nixpkgs.config.allowUnfree = true;
   
-    environment.pathsToLink = [
-      "/share/nix-direnv"
-  ];  
-  
-    nixpkgs.overlays = [
-      (self: super: { nix-direnv = super.nix-direnv.override { enableFlakes = true; }; } )
+  nixpkgs.overlays = [
+    (self: super: { nix-direnv = super.nix-direnv.override { enableFlakes = true; }; } )
+  ];
+
+  environment.pathsToLink = [
+    "/share/nix-direnv"
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
