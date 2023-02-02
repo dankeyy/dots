@@ -43,12 +43,19 @@ alias ocaml="rlwrap ocaml"
 alias e="exa -lah --icons"
 alias exa="exa --icons"
 alias def="xdg-open"
+alias pip="pip3"
 alias fm="pcmanfm"
 alias st="git status"
 alias ct="~/Desktop/Cutter-v2.0.5-x64.Linux.AppImage"
 alias d8="rlwrap ~/dev/v8/v8/out/x64.debug/d8 --allow-natives-syntax"
-set -q GHCUP_INSTALL_BASE_PREFIX[1]; or set GHCUP_INSTALL_BASE_PREFIX $HOME ; set -gx PATH $HOME/.cabal/bin /home/dankey/.ghcup/bin $PATH # ghcup-env
+alias hebk="setxkbmap -option grp:lalt_lshift_toggle us,il -option caps:escape"
+alias bqnk="setxkbmap -option grp:lalt_lshift_toggle us,bqn -option caps:escape"
+
 set -gx PATH $HOME/.local/bin $PATH
-set -U fish_user_paths /home/dankey/.nimble/bin $fish_user_paths
 set -U fish_user_paths /home/dankey/dev/depot_tools $fish_user_paths
+set -U fish_user_paths /home/dankey/dev/ELFkickers/bin $fish_user_paths
+
+export DOCKER_HOST=unix:///var/run/docker.sock
+
 starship init fish | source
+direnv hook fish | source
