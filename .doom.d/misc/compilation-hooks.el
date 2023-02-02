@@ -2,7 +2,7 @@
 (defun c-buffer-config()
     (load! "disaster")
     (setq-local compile-command
-        (format "gcc -Wall %s -o %s.out && ./%s.out"
+        (format "gcc -Wall -Wextra -Wpedantic %s -o %s.out && ./%s.out"
                 (shell-quote-argument (buffer-name))
                 (file-name-sans-extension (buffer-name))
                 (file-name-sans-extension (buffer-name)))))
@@ -19,8 +19,10 @@
 (add-hook 'c++-mode-hook #'cpp-buffer-config)
 
 
+
 (defun python-buffer-config ()
   (load! "disaster")
+  (local-set-key (kbd "C-c C-f") #'python-shell-send-defun)
   (setq lsp-pyright-use-library-code-for-types t)
   (setq lsp-pyright-stub-path (concat (getenv "HOME") "/dev/pystubs"))
 
@@ -57,7 +59,5 @@
     (lambda ()
       (load! "disaster")
       (setq-local compile-command
-        (format "zig build-exe %s -o %s.out && ./%s.out"
-        (shell-quote-argument (buffer-name))
-        (file-name-sans-extension (buffer-name))
-        (file-name-sans-extension (buffer-name))))))
+        (format "zig run %s"
+        (shell-quote-argument (buffer-name))))))

@@ -16,6 +16,11 @@
 
 (add-hook 'after-init-hook #'(lambda () (global-prettify-symbols-mode +1) (global-flycheck-mode +1) (global-company-mode +1)))
 
+(with-eval-after-load 'company
+   (define-key company-active-map (kbd "<return>") nil)
+   (define-key company-active-map (kbd "RET") nil)
+   (define-key company-active-map (kbd "M-q") #'company-complete-selection))
+
 (setq native-comp-deferred-compilation nil)
 (after! (doom-packages straight)
   (setq straight--native-comp-available t))
@@ -86,19 +91,19 @@
 
        :checkers
        syntax              ; tasing you for every semicolon you forget
-       ;; (spell +flyspell) ; tasing you for misspelling mispelling
+       (spell +hunspell +flyspell) ; tasing you for misspelling mispelling
        ;; grammar           ; tasing grammar mistake every you make
 
        :tools
        ;;ansible
        debugger          ; FIXME stepping through code, to help you add bugs
        ;;direnv
-       ;;docker
+       docker
        ;;editorconfig      ; let someone else argue about tabs vs spaces
        ;; ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls)
        gist              ; interacting with github gists
-       lookup              ; navigate your code and its documentation
+       (lookup +dictionary +offline)              ; navigate your code and its documentation
        lsp               ; M-x vscode
        magit             ; a git porcelain for Emacs
        make              ; run make tasks from Emacs
@@ -149,12 +154,12 @@
        ;;latex             ; writing papers in Emacs has never been so fun
        ;;lean              ; for folks with too much to prove
        ;;ledger            ; be audit you can be
-       ;;lua               ; one-based indices? one-based indices
+       lua               ; one-based indices? one-based indices
        markdown          ; writing docs for people to ignore
        (nim +lsp)               ; python + lisp at the speed of c
-       ;;nix               ; I hereby declare "nix geht mehr!"
-       ;;ocaml             ; an objective camel
-       ;; org               ; organize your plain life in plain text
+       nix               ; I hereby declare "nix geht mehr!"
+       ocaml             ; an objective camel
+       ;;org               ; organize your plain life in plain text
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
@@ -194,3 +199,11 @@
        ;;literate
        (default +bindings +smartparens))
 
+
+(setq lsp-clients-clangd-args '("-j=3"
+                                "--background-index"
+                                "--clang-tidy"
+                                "--completion-style=detailed"
+                                "--header-insertion=never"
+                                "--header-insertion-decorators=0"))
+(after! lsp-clangd (set-lsp-priority! 'clangd 2))

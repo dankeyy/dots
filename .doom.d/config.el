@@ -1,20 +1,33 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
 (add-to-list 'load-path "misc/")
+(add-to-list 'load-path "misc/bqn-mode/")
 (load! "misc/compilation-hooks.el")
 (load! "misc/poogle.el") ;; jump to snek docs
 (load! "misc/topsy.el")  ;; shows topmost definition
 (load! "misc/gcmh.el")   ;; garbage collection
+
+;; that's dumb af
+;; (load! "misc/bqn-mode/bqn-symbols.el")
+;; (load! "misc/bqn-mode/bqn-symbols-doc.el")
+;; (load! "misc/bqn-mode/bqn-syntax.el")
+;; (load! "misc/bqn-mode/bqn-backslash.el")
+;; (load! "misc/bqn-mode/bqn-help.el")
+;; (load! "misc/bqn-mode/bqn-comint.el")
+;; (load! "misc/bqn-mode/bqn-glyphs.el")
+;; (load! "misc/bqn-mode/bqn-input.el")
+;; (load! "misc/bqn-mode/bqn-keyboard.el")
+;; (load! "misc/bqn-mode/bqn-mode.el")
 
 (gcmh-mode 1)
 (add-hook 'prog-mode-hook #'topsy-mode)
 
 
 ;; how stuff looks
-(setq doom-theme 'doom-oceanic-next)
+(setq doom-theme 'doom-henna)
 
-(setq  doom-font         (font-spec :family "Fira Code"   :size 15))
-(setq! doom-unicode-font (font-spec :family "Victor Mono" :size 11))
+(setq  doom-font         (font-spec :family "FiraCode Nerd Font"   :size 14))
+;(setq! doom-unicode-font (font-spec :family "BQN386" :size 14))
 
 (setq display-line-numbers-type 'relative)
 
@@ -36,9 +49,11 @@
 
 
 ;; ma keys
+;; (map! :nv "M-q"        #'company-complete-selection)
 (map! :nv "M-c"        #'cc)
 (map! :nv "M-r"        #'recompile)
 (map! :nv "M-y"        #'yank-from-kill-ring)
+(map! :nv "M-p"        #'mark-paragraph)
 (map! :nv "M-e"        #'iedit-mode)
 (map! :nv "M-<escape>" #'keyboard-escape-quit)
 (map! :nv "M-s f"      #'find-name-dired)
@@ -57,21 +72,25 @@
 (map! :nv "SPC s g"    #'poogle)
 (map! :nv "SPC g d"    #'vc-msg-show)
 (map! :nv "g b"        #'pop-global-mark)
-(map! :nv "SPC r s"    #'string-rectangle)
+(map! :nv "SPC r t"    #'string-rectangle)
 (map! :nv "SPC r k"    #'kill-rectangle)
-(map! :nv "C-f"        #'vr/isearch-forward)
-(map! :nv "C-b"        #'vr/isearch-backward)
+(map! :nv "SPC s c"    #'async-shell-command)
+;; (map! :nv "C-f"        #'vr/isearch-forward)
+(map! :nv "C-y"        #'yank)
+;; (map! :nv "C-b"        #'vr/isearch-backward)
+;; (map! :nv "C-l"        #'recenter-top-bottom)
 (map! :nv "SPC l"      #'(lambda () (interactive) (insert "λ")))
 (map! :leader "s m"    #'(lambda () (interactive) (rectangle-mark-mode) (simulate-esc) (simulate-esc))) ;; set mark for rectangle-mode, very hacky but works
 
 
 ;; company
-(with-eval-after-load 'company
-  (define-key company-active-map (kbd "<return>") nil)
-  (define-key company-active-map (kbd "RET") nil))
+;;(with-eval-after-load 'company
+;;  (define-key company-active-map (kbd "<return>") nil)
+;;  (define-key company-active-map (kbd "RET") nil)
+;;  (define-key company-active-map (kbd "M-q") #'company-complete-selection))
 
 (setq company-quickhelp-mode t)
-(setq company-idle-delay 0.3)
+(setq company-idle-delay 0.2)
 (setq company-show-quick-access t)
 (setq company-mode/enable-yas t)
 (add-to-list 'company-backends #'company-yasnippet)
@@ -79,8 +98,8 @@
 
 
 ;; transparency
-(set-frame-parameter (selected-frame) 'alpha '(90 . 80))
-(add-to-list 'default-frame-alist '(alpha . (85 . 85)))
+;; (set-frame-parameter (selected-frame) 'alpha '(90 . 80))
+;; (add-to-list 'default-frame-alist '(alpha . (85 . 85)))
 ;; if on emacs 29, try
 ;; (set-frame-parameter nil 'alpha-background 0.2)
 ;; (set-frame-parameter (selected-frame) 'alpha-background 0.5)
@@ -89,13 +108,13 @@
 ;; dired config
 (setq dired-kill-when-opening-new-dired-buffer t)
 (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
-
+(setq dired-dwim-target t)
 
 ;; pdf config
 (add-hook 'pdf-view-mode-hook
-          (lambda ()
-            (hide-mode-line-mode)
-            (pdf-view-midnight-minor-mode)))
+  (lambda ()
+    (hide-mode-line-mode)
+    (pdf-view-midnight-minor-mode)))
 
 
 ;; scroll with cursor
@@ -123,10 +142,6 @@
 (setq tab-width 4)
 
 
-;; it's slow im disabling it
-(setq lsp-enable-file-watchers 'nil)
-
-
 ;; the visual replacement thingy
 (setq vr/engine 'python)
 
@@ -141,3 +156,14 @@
 
 ;; line textwrap
 (global-visual-line-mode t)
+
+
+;; dots for whitespace
+(setq whitespace-face 'shadow)
+(setq whitespace-style '(face spaces space-mark))
+(setq whitespace-display-mappings '((space-mark 32 [183] [46])))
+(global-whitespace-mode)
+
+
+;; realgud settings
+(setq realgud-safe-mode nil)
