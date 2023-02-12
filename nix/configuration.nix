@@ -89,7 +89,7 @@
   users.users.dankey = {
     isNormalUser = true;
     description = "dankey";
-    extraGroups = [ "networkmanager" "wheel" "libvirtd" ];
+    extraGroups = [ "networkmanager" "wheel" "libvirtd" "docker" ];
     packages = with pkgs; [
       firefox
       kate
@@ -182,7 +182,6 @@
     dmd
     clang-tools
     gnumake
-    llvm
     nodePackages.pyright
     nerdfonts
     imagemagick
@@ -212,12 +211,27 @@
     _7zz
     xarchiver
     brotli
+    llvm
+    cmake
+    libllvm
     gnupg
     helix
     spotify
     direnv 
     nix-direnv
-   ];
+    musl 
+    pharo
+    pharo-launcher
+    racket
+    guile
+    delta
+    du-dust
+    duf
+    hyperfine
+    zoxide
+    xh
+    multitime
+  ];
 
   # nix + direnv
   nix.settings = {
@@ -235,6 +249,13 @@
   environment.pathsToLink = [
     "/share/nix-direnv"
   ];
+
+  # docker
+  virtualisation.docker.enable = true;
+  virtualisation.docker.rootless = {
+    enable = true;
+    setSocketVariable = true;
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
