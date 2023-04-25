@@ -2,7 +2,7 @@
 
 (add-to-list 'load-path "misc/")
 (add-to-list 'load-path "misc/bqn-mode/")
-(load! "misc/compilation-hooks.el")
+(load! "misc/lang-hooks.el")
 (load! "misc/poogle.el") ;; jump to snek docs
 (load! "misc/topsy.el")  ;; shows topmost definition
 (load! "misc/gcmh.el")   ;; garbage collection
@@ -55,6 +55,8 @@
 (map! :nv "M-y"        #'yank-from-kill-ring)
 (map! :nv "M-p"        #'mark-paragraph)
 (map! :nv "M-e"        #'iedit-mode)
+(map! :nv "M-?"        #'lsp-ui-peek-find-references)
+(map! :nv "M-."        #'lsp-ui-peek-find-definitions)
 (map! :nv "M-<escape>" #'keyboard-escape-quit)
 (map! :nv "M-s f"      #'find-name-dired)
 (map! :nv "C-9"        #'sp-wrap-round)
@@ -167,3 +169,16 @@
 
 ;; realgud settings
 (setq realgud-safe-mode nil)
+
+;; enable hyperlinks
+(add-to-list 'comint-output-filter-functions 'comint-osc-process-output)
+
+
+;; lsp config
+(setq lsp-ui-doc-delay 0)
+(setq lsp-ui-doc-show-with-cursor t)
+(setq lsp-ui-doc-show-with-mouse t)
+(setq lsp-ui-doc-position 'top)
+(setq lsp-ui-sideline-show-hover t)
+;; (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+;; (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
