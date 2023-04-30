@@ -47,9 +47,13 @@
   (interactive)
   (execute-kbd-macro (kbd "<escape>")))
 
+(defun project-find-regexp-universal ()
+  (interactive)
+  (setq current-prefix-arg '(4))
+  (call-interactively 'project-find-regexp))
+
 
 ;; ma keys
-;; (map! :nv "M-q"        #'company-complete-selection)
 (map! :nv "M-c"        #'cc)
 (map! :nv "M-r"        #'recompile)
 (map! :nv "M-y"        #'yank-from-kill-ring)
@@ -77,13 +81,11 @@
 (map! :nv "SPC r t"    #'string-rectangle)
 (map! :nv "SPC r k"    #'kill-rectangle)
 (map! :nv "SPC s c"    #'async-shell-command)
-;; (map! :nv "C-f"        #'vr/isearch-forward)
 (map! :nv "C-y"        #'yank)
-;; (map! :nv "C-b"        #'vr/isearch-backward)
-;; (map! :nv "C-l"        #'recenter-top-bottom)
+(map! :nv "C-l"        #'recenter-top-bottom)
 (map! :nv "SPC l"      #'(lambda () (interactive) (insert "λ")))
 (map! :leader "s m"    #'(lambda () (interactive) (rectangle-mark-mode) (simulate-esc) (simulate-esc))) ;; set mark for rectangle-mode, very hacky but works
-
+(map! :leader "/"      #'project-find-regexp-universal)
 
 ;; company
 ;;(with-eval-after-load 'company
@@ -180,5 +182,5 @@
 (setq lsp-ui-doc-show-with-mouse t)
 (setq lsp-ui-doc-position 'top)
 (setq lsp-ui-sideline-show-hover t)
-;; (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-;; (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+(setq lsp-ui-doc-max-width 90)
+(setq lsp-ui-doc-max-height 20)
